@@ -4,10 +4,11 @@ import json
 import os
 
 
-# TODO: fix question IDs
+DATUMS_MODEL_PATH = os.environ['DATUMS_MODEL_PATH']
+DATUMS_DB = os.environ['DATUMS_DB']  # postgres engine string
+REPORTER_PATH = os.environ['REPORTER_PATH']
 
-REPORTER_PATH = os.path.expanduser('~/Dropbox/Apps/Reporter-App/')
-execfile(os.path.expanduser('~/Workspace/datums/models/db.py'))
+execfile(DATUMS_MODEL_PATH)  # Load table classes
 
 # Gather all Reporter reports
 report_files = [file for file in os.listdir(

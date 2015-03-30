@@ -7,15 +7,18 @@ import time
 import os
 
 
-REPORTER_PATH = os.path.expanduser('~/Dropbox/Apps/Reporter-App/')
-execfile(os.path.expanduser('~/Workspace/datums/models/db.py'))
+DATUMS_MODEL_PATH = os.environ['DATUMS_MODEL_PATH']
+DATUMS_DB = os.environ['DATUMS_DB']  # postgres engine string
+REPORTER_PATH = os.environ['REPORTER_PATH']
+
+execfile(DATUMS_MODEL_PATH)  # Load table classes
 
 # Gather all Reporter reports
 report_files = [file for file in os.listdir(
     REPORTER_PATH) if file.endswith('.json')]
 
 # Initialize database engine
-engine = create_engine('postgresql://jsa@localhost:5432/datums', echo=False)
+engine = create_engine(DATUMS_DB, echo=False)
 # Initialize session
 Session = sessionmaker(bind=engine)
 

@@ -7,9 +7,10 @@ from sqlalchemy import create_engine
 '''Create the Reporter database ORM. Note that some information captured by the 
 Reporter application are not included (e.g., photo sets).'''
 
+DATUMS_DB = os.environ['DATUMS_DB']  # postgres engine string
+
 # Initialize database engine
-engine = create_engine('postgresql://jsa@localhost:5432/datums',
-                       echo=False, pool_size=20, max_overflow=0)
+engine = create_engine(DATUMS_DB, echo=False, pool_size=20, max_overflow=0)
 
 # Initialize declarative base
 Base = declarative_base()
