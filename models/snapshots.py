@@ -1,70 +1,21 @@
-from sqlalchemy import Column, ForeignKey, Integer, Numeric, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, ForeignKey
+from sqlalchemy import Integer, Numeric, String, DateTime
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy import create_engine
 
+from datums.models import Base, metadata
 
-'''Create the Reporter database ORM. Note that some information captured by the 
-Reporter application are not included (e.g., photo sets).'''
-
-DATUMS_DB = os.environ['DATUMS_DB']  # postgres engine string
-
-# Initialize database engine
-engine = create_engine(DATUMS_DB, echo=False, pool_size=20, max_overflow=0)
-
-# Initialize declarative base
-Base = declarative_base()
-
-
-class Question(Base):
-
-    '''The questions table is a join table with a question ID, prompt and 
-    response type.'''
-    __tablename__ = 'questions'
-
-    prompt = Column(String, primary_key=True, nullable=False)
-    response_type_id = Column(Integer)
-    response_type = Column(String)
-
-    def __repr__(self):
-        return '''<Question(prompt='%s', response_type_id='%s', 
-            reponse_type='%s')>''' % (self.prompt, self.response_type_id,
-                                      self.response_type)
-
-
-class Response(Base):
-
-    '''The responses table holds the response information of a report. Each
-    response is linked to a snapshot and a question.'''
-    __tablename__ = 'responses'
-
-    snapshot_id = Column(
-        String, ForeignKey('snapshots.id'), primary_key=True, nullable=False)
-    question_prompt = Column(
-        String, ForeignKey('questions.prompt'), nullable=False)
-    response = Column(String)
-
-    question = relationship(
-        'Question', backref=backref('responses'))
-
-    def __repr__(self):
-        return "<Response(question_prompt='%s', response='%s')>" % (
-            self.question_prompt, self.response)
+__all__ = ['Snapshot', 'AudioSnapshot', 'LocationSnapshot',
+           'PlacemarkSnapshot', 'WeatherSnapshot']
 
 
 class Snapshot(Base):
 
-    '''The snapshots table holds the non-response information that Reporter 
-    collects when a report is made.'''
     __tablename__ = 'snapshots'
 
-    id = Column(String, primary_key=True, nullable=False)
-    audio_snapshot_id = Column(
-        String, ForeignKey('audio_snapshots.id'), nullable=False)
-    location_snapshot_id = Column(
-        String, ForeignKey('location_snapshots.id'), nullable=False)
-    weather_snapshot_id = Column(
-        String, ForeignKey('weather_snapshots.id'), nullable=False)
+    id = Column(String, primary_key=True)
+    audio_snapshot_id = Column(String, ForeignKey('audio_snapshots.id'))
+    location_snapshot_id = Column(String, ForeignKey('location_snapshots.id'))
+    weather_snapshot_id = Column(String, ForeignKey('weather_snapshots.id'))
     created_at = Column(DateTime)
     report_impetus = Column(Integer)
     battery = Column(Numeric)
@@ -87,9 +38,10 @@ class Snapshot(Base):
 
 
 class AudioSnapshot(Base):
+
     __tablename__ = 'audio_snapshots'
 
-    id = Column(String, primary_key=True, nullable=False)
+    id = Column(String, primary_key=True)
     average = Column(Numeric)
     peak = Column(Numeric)
 
@@ -99,11 +51,11 @@ class AudioSnapshot(Base):
 
 
 class LocationSnapshot(Base):
+
     __tablename__ = 'location_snapshots'
 
-    id = Column(String, primary_key=True, nullable=False)
-    placemark_id = Column(
-        String, ForeignKey('placemark_snapshots.id'), nullable=False)
+    id = Column(String, primary_key=True)
+    placemark_id = Column(String, ForeignKey('placemark_snapshots.id'))
     created_at = Column(DateTime)
     latitude = Column(Numeric)
     longitude = Column(Numeric)
@@ -124,9 +76,10 @@ class LocationSnapshot(Base):
 
 
 class PlacemarkSnapshot(Base):
+
     __tablename__ = 'placemark_snapshots'
 
-    id = Column(String, primary_key=True, nullable=False)
+    id = Column(String, primary_key=True)
     street_address = Column(String)
     neighborhood = Column(String)
     city = Column(String)
@@ -144,9 +97,10 @@ class PlacemarkSnapshot(Base):
 
 
 class WeatherSnapshot(Base):
+
     __tablename__ = 'weather_snapshots'
 
-    id = Column(String, primary_key=True, nullable=False)
+    id = Column(String, primary_key=True)
     station_id = Column(String)
     latitude = Column(Numeric)
     longitude = Column(Numeric)
@@ -163,7 +117,7 @@ class WeatherSnapshot(Base):
     wind_gust_kph = Column(Numeric)
     relative_humidity = Column(String)
     precipitation_in = Column(Numeric)
-    precipitation_mm = Column(Numeric)  # double check that this is mm
+    precipitation_mm = Column(Numeric)
     dewpoint_celsius = Column(Numeric)
     visibility_mi = Column(Numeric)
     visibility_km = Column(Numeric)
@@ -194,6 +148,3 @@ class WeatherSnapshot(Base):
                                                 self.dewpoint_celsius,
                                                 self.visibility_mi,
                                                 self.visibility_km, self.uv)
-
-# Create the tables in the database
-Base.metadata.create_all(engine)
