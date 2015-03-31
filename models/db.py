@@ -26,10 +26,6 @@ class Question(Base):
     response_type_id = Column(Integer)
     response_type = Column(String)
 
-    def __init__(self, dict):
-        for k, v in dict.items():
-            setattr(self, k, v)
-
     def __repr__(self):
         return '''<Question(prompt='%s', response_type_id='%s', 
             reponse_type='%s')>''' % (self.prompt, self.response_type_id,
@@ -39,7 +35,7 @@ class Question(Base):
 class Response(Base):
 
     '''The responses table holds the response information of a report. Each
-    response is linked to a snapshot and a question id.'''
+    response is linked to a snapshot and a question.'''
     __tablename__ = 'responses'
 
     snapshot_id = Column(
@@ -50,10 +46,6 @@ class Response(Base):
 
     question = relationship(
         'Question', backref=backref('responses'))
-
-    def __init__(self, dict):
-        for k, v in dict.items():
-            setattr(self, k, v)
 
     def __repr__(self):
         return "<Response(question_prompt='%s', response='%s')>" % (
@@ -87,10 +79,6 @@ class Snapshot(Base):
     weather_snapshot = relationship(
         'WeatherSnapshot', backref=backref('snapshots', order_by=id))
 
-    def __init__(self, dict):
-        for k, v in dict.items():
-            setattr(self, k, v)
-
     def __repr__(self):
         return '''<Snapshot(created_at='%s', report_impetus='%s', battery='%s',
             steps='%s', floors_ascended='%s', floors_descended='%s')>''' % (
@@ -104,10 +92,6 @@ class AudioSnapshot(Base):
     id = Column(String, primary_key=True, nullable=False)
     average = Column(Numeric)
     peak = Column(Numeric)
-
-    def __init__(self, dict):
-        for k, v in dict.items():
-            setattr(self, k, v)
 
     def __repr__(self):
         return "<AudioSnapshot(average='%s', peak='%s')>" % (self.average,
@@ -131,10 +115,6 @@ class LocationSnapshot(Base):
     placemark = relationship(
         'PlacemarkSnapshot', backref=backref('location_snapshots', order_by=id))
 
-    def __init__(self, dict):
-        for k, v in dict.items():
-            setattr(self, k, v)
-
     def __repr__(self):
         return '''<LocationSnapshot(created_at='%s', latitude='%s',
             longitude='%s', altitude='%s', speed='%s', vertical_accuracy='%s',
@@ -154,10 +134,6 @@ class PlacemarkSnapshot(Base):
     state = Column(String)
     country = Column(String)
     postal_code = Column(String)
-
-    def __init__(self, dict):
-        for k, v in dict.items():
-            setattr(self, k, v)
 
     def __repr__(self):
         return '''<PlacemarkSnapshot(street_address='%s', neighborhood='%s', 
@@ -192,10 +168,6 @@ class WeatherSnapshot(Base):
     visibility_mi = Column(Numeric)
     visibility_km = Column(Numeric)
     uv = Column(Numeric)
-
-    def __init__(self, dict):
-        for k, v in dict.items():
-            setattr(self, k, v)
 
     def __repr__(self):
         return '''<WeatherSnapshot(station_id='%s', latitude='%s', 

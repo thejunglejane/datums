@@ -36,7 +36,7 @@ Session = sessionmaker(bind=engine)
 for k, v in question_response_types.items():
     question_dict = {'prompt': k, 'response_type_id': v,
                      'response_type': response_type_ids[v]}
-    new_question = Question(question_dict)
+    new_question = Question(**question_dict)
 
     session = Session()
     session.add(new_question)

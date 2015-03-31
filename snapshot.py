@@ -50,12 +50,12 @@ def add_snapshot(record):
     # Open a session
     session = Session()
 
-    new_snapshot = Snapshot(snapshot_dict)
-    new_snapshot.audio_snapshot = AudioSnapshot(audio_snapshot_dict)
-    new_snapshot.location_snapshot = LocationSnapshot(location_snapshot_dict)
+    new_snapshot = Snapshot(**snapshot_dict)
+    new_snapshot.audio_snapshot = AudioSnapshot(**audio_snapshot_dict)
+    new_snapshot.location_snapshot = LocationSnapshot(**location_snapshot_dict)
     new_snapshot.location_snapshot.placemark = PlacemarkSnapshot(
-        placemark_snapshot_dict)
-    new_snapshot.weather_snapshot = WeatherSnapshot(weather_snapshot_dict)
+        **placemark_snapshot_dict)
+    new_snapshot.weather_snapshot = WeatherSnapshot(**weather_snapshot_dict)
 
     # Add the new snapshot to the database
     session.add(new_snapshot)

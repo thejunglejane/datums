@@ -53,7 +53,7 @@ def add_response(record, snapshot):
         response_dict['response'] = [
             str(''.join(c for c in i['text'] if ord(c) < 128)) for i in record['tokens']]
 
-    new_response = Response(response_dict)
+    new_response = Response(**response_dict)
 
     # Open a new session
     session = Session()
