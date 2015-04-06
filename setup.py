@@ -9,8 +9,8 @@ def readme():
 
 setup(
     name = 'datums',
-    packages = ['datums', 'models'],
-    scripts = ['bin/datums']
+    packages = ['datums.datums', 'datums.models'],
+    scripts = ['bin/datums'],
     version = __version__,
     description = 'A PostgreSQL pipeline for Reporter data.',
     author = 'Jane Stewart Adams',
