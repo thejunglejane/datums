@@ -46,7 +46,10 @@ The schema is defined in the datums.models module.
 [DATA MODEL]
 
 ### Populate the Database
-The datums.pipeline module allows you to add, update, and delete individual and bulk reports. When you first set datums up, you'll probably want to add all the reports in your Dropbox folder. To do this
+The datums.pipeline module allows you to add, update, and delete individual and bulk reports. 
+
+##### Bulk
+When you first set datums up, you'll probably want to add all the reports in your Dropbox folder. To do this
 ```python
 >>> from datums import pipeline
 >>> from datums.pipeline import add
@@ -65,4 +68,20 @@ And, the same with bulk deleting reports. You can just tear down the database wi
 >>> from datums import pipeline
 >>> from datums.pipeline import delete
 >>> add.bulk_delete_reports(pipeline.all_reporter_files)
+```
+
+You can also pass a single filename, or your own list of filenames, to `add.bulk_add_reports()`. Because each file contains _n_ reports for a given day, this is still a bulk operation.
+
+##### Individual
+To add, update, or delete individual reports, datums expects a dictionary
+
+```python
+>>> from datums import pipeline
+>>> from datums.pipeline import update
+>>> first_file = pipeline.all_reporter_files[0]
+>>> with open(first_file, 'r') as f:
+...     reports = json.load(f)
+>>> first_snapshot = reports['snapshots'][0]
+>>> first_responses = first_snapshot['responses']
+>>> update.add_report(first_snapshot)
 ```
