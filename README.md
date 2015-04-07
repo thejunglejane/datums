@@ -52,3 +52,17 @@ The datums.pipeline module allows you to add, update, and delete individual and 
 >>> from datums.pipeline import add
 >>> add.bulk_add_reports(pipeline.all_reporter_files)
 ```
+
+`pipeline.all_reporter_files` is a list of all the JSON files in the `REPORTER_PATH` specified in your .env. If you make a change to one of those files, or if Reporter makes a change to one of those files, you can also update all your reports in bulk. If a new report has appeared, the bulk update will create it in the database, too.
+```python
+>>> from datums import pipeline
+>>> from datums.pipeline import update
+>>> add.bulk_update_reports(pipeline.all_reporter_files)
+```
+
+And, the same with bulk deleting reports. You can just tear down the database with `base.database_teardown()`, or you can bulk delete all reports with
+```python
+>>> from datums import pipeline
+>>> from datums.pipeline import delete
+>>> add.bulk_delete_reports(pipeline.all_reporter_files)
+```
