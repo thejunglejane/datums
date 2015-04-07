@@ -32,16 +32,23 @@ where `username` is the output of `whoami`. You're obviously free to name the da
 
 To setup the schema in the database
 ```python
->>> from datums import models
->>> models.base.database_setup(models.engine)
+>>> from datums.models import base
+>>> base.database_setup(base.engine)
+```
+
+and to tear down the database (if you ever need to)
+```python
+>>> from datums.models import base
+>>> base.database_teardown(base.engine)
 ```
 
 The schema is defined in the datums.models module.
 [DATA MODEL]
 
 ### Populate the Database
-The datums.datums module allows you to add individual reports as well as bulk add reports. When you first set datums up, you'll probably want to add all the reports in your Dropbox folder. To do this
+The datums.pipeline module allows you to add, update, and delete individual and bulk reports. When you first set datums up, you'll probably want to add all the reports in your Dropbox folder. To do this
 ```python
->>> from datums import datums
->>> datums.datums.bulk_add_reports(datums.all_reporter_files)
+>>> from datums import pipeline
+>>> from datums.pipeline import add
+>>> add.bulk_add_reports(pipeline.all_reporter_files)
 ```
