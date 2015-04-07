@@ -164,28 +164,16 @@ def add_response(response, snapshot):
     # TODO: update record with additional information in response_dict
 
 
-def add_report(report):
-    # Add questions
-    for question in report['questions']:
-        add_question(question)
+def add_report(snapshot):
     # Add snapshots
-    for snapshot in report['snapshots']:
-        add_snapshot(snapshot)
-        add_audio_snapshot(snapshot)
-        add_location_snapshot(snapshot)
-        add_weather_snapshot(snapshot)
-        add_weather_snapshot(snapshot)
-        # Add responses
-        for response in snapshot['responses']:
-            add_response(response, snapshot)
-
-
-def update_report(report):
-    pass
-
-
-def delete_report(report):
-    pass
+    add_snapshot(snapshot)
+    add_audio_snapshot(snapshot)
+    add_location_snapshot(snapshot)
+    add_weather_snapshot(snapshot)
+    add_weather_snapshot(snapshot)
+    # Add responses
+    for response in snapshot['responses']:
+        add_response(response, snapshot)
 
 
 def bulk_add_reports(files):
@@ -195,4 +183,8 @@ def bulk_add_reports(files):
     for file in files:
         with open(file, 'r') as f:
             report = json.load(f)
-        add_report(report)
+        # Add questions
+        for question in report['questions']:
+            add_question(question)
+        for snapshot in report['snapshots']:
+            add_report(snapshot)
