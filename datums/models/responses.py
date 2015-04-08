@@ -40,7 +40,7 @@ class BooleanResponse(Response):
 
     def __repr__(self):
         return '''<BooleanResponse(question_id='%s', response='%s')>''' % (
-            self.question_id, self.response)
+            self.question_id, self.boolean_response)
 
 
 class LocationResponse(Response):
@@ -55,7 +55,7 @@ class LocationResponse(Response):
     def __repr__(self):
         return '''<LocationResponse(question_id='%s', response='%s',
             venue_id='%s')>''' % (
-            self.question_id, self.response, self.venue_id)
+            self.question_id, self.location_response, self.venue_id)
 
 
 class MultiResponse(Response):
@@ -68,7 +68,7 @@ class MultiResponse(Response):
 
     def __repr__(self):
         return '''<MultiResponse(question_id='%s', response='%s')>''' % (
-            self.question_id, self.response)
+            self.question_id, self.multi_response)
 
 
 class NoteResponse(Response):
@@ -81,7 +81,7 @@ class NoteResponse(Response):
 
     def __repr__(self):
         return '''<NoteResponse(question_id='%s', response='%s')>''' % (
-            self.question_id, self.response)
+            self.question_id, self.note_response)
 
 
 class NumericResponse(Response):
@@ -94,7 +94,7 @@ class NumericResponse(Response):
 
     def __repr__(self):
         return '''<NumericResponse(question_id='%s', response='%s')>''' % (
-            self.question_id, self.response)
+            self.question_id, self.numeric_response)
 
 
 class PeopleResponse(Response):
@@ -107,7 +107,7 @@ class PeopleResponse(Response):
 
     def __repr__(self):
         return '''<PeopleResponse(question_id='%s', response='%s')>''' % (
-            self.question_id, self.response)
+            self.question_id, self.people_response)
 
 
 class TokenResponse(Response):
@@ -120,4 +120,4 @@ class TokenResponse(Response):
 
     def __repr__(self):
         return '''<TokenResponse(question_id='%s', response='%s')>''' % (
-            self.question_id, self.response)
+            self.question_id, self.token_response)
