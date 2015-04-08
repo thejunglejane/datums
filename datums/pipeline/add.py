@@ -33,9 +33,7 @@ boolean_mapper = ResponseClassMapper(
 
 location_mapper = ResponseClassMapper(
     models.LocationResponse, ('location_response', 'venue_id'),
-    (lambda x: (x['locationResponse'].get('text', None),
-                x['locationResponse'].get('foursquareVenueId', None))
-        if x.get('locationResponse') else (None, None)))
+    (lambda x: (x['locationResponse'].get('text', None), x['locationResponse'].get('foursquareVenueId', None)) if x.get('locationResponse') else (None, None)))
 
 people_mapper = ResponseClassMapper(
     models.PeopleResponse, 'people_response',
@@ -170,14 +168,18 @@ def add_response(response, snapshot):
 
     # Dictionary mapping response type to response class, column, and accessor
     # mapper
-    response_mapper = {0: token_mapper, 1: multi_mapper, 2: boolean_mapper, 
-                       3: location_mapper, 4: people_mapper, 5: numeric_mapper, 
+    response_mapper = {0: token_mapper, 1: multi_mapper, 2: boolean_mapper,
+                       3: location_mapper, 4: people_mapper, 5: numeric_mapper,
                        6: note_mapper}
 
     new_response = response_mapper[response_type].return_response(response)
-    # TODO: update record with additional information in response_dict
-    new_response.get_or_create(snapshot_id = snapshot['uniqueIdentifier'],
-                               question_id = question_id)
+
+    filters = {'question_id': question_id,  # set the question ID
+               'snapshot_id': snapshot['uniqueIdentifier'],  # set the snapshot ID
+               response_mapper[response_type].column: getattr(
+                   new_response, response_mapper[response_type].column)}
+
+    new_response.get_or_create(**filters)
 
 
 def add_report(snapshot):
@@ -194,11 +196,11 @@ def add_report(snapshot):
 
 def bulk_add_reports(files):
     if not isinstance(files, list):
-        files=[files]
+        files = [files]
     # Add all reports for the files in files
     for file in files:
         with open(file, 'r') as f:
-            report=json.load(f)
+            report = json.load(f)
         # Add questions
         for question in report['questions']:
             add_question(question)
