@@ -82,6 +82,7 @@ To add, update, or delete individual reports, datums expects a dictionary
 >>> with open(first_file, 'r') as f:
 ...     reports = json.load(f)
 >>> first_snapshot = reports['snapshots'][0]
->>> first_responses = first_snapshot['responses']
 >>> update.add_report(first_snapshot)
 ```
+
+# TODO: define the terms: report, report file, snapshot, response, question
