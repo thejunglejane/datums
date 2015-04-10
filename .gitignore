@@ -2,6 +2,7 @@
 .env
 *.sh
 *.pyc
+*.swp
 
 build/*
 datums.egg-info/*
