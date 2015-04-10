@@ -17,9 +17,9 @@ session.configure(bind=engine)
 class GhostBase(Base):
 
     '''The GhostBase class extends the declarative Base class.'''
-    
+
     __abstract__ = True
-    
+
     @classmethod
     def get_or_create(cls, **kwargs):
         '''
@@ -33,6 +33,25 @@ class GhostBase(Base):
         session.add(q)
         session.commit()
         return q
+
+
+class ResponseClassLegacyAccessor(object):
+
+    def __init__(self, response_class, column, accessor):
+        self.response_class = response_class
+        self.column = column
+        self.accessor = accessor
+
+    def get_or_create_from_legacy_response(self, response, **kwargs):
+        response_cls = self.response_class(**kwargs)
+        # Return the existing or newly created response record for the unique
+        # question_id, snapshot_id pair
+        response_cls = response_cls.get_or_create(**kwargs)
+        # If the record does not have a response, add it
+        if not getattr(response_cls, self.column):
+            setattr(response_cls, self.column, self.accessor(response))
+            session.add(response_cls)
+            session.commit()
 
 
 def database_setup(engine):

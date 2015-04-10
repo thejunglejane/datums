@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.dialects import postgresql
 from sqlalchemy_utils import UUIDType
 
-from base import GhostBase
+from base import GhostBase, ResponseClassLegacyAccessor
 
 __all__ = ['Response', 'BooleanResponse', 'NumericResponse', 'LocationResponse',
            'MultiResponse', 'NoteResponse', 'PeopleResponse', 'TokenResponse']
@@ -120,4 +120,4 @@ class TokenResponse(Response):
 
     def __repr__(self):
         return '''<TokenResponse(question_id='%s', response='%s')>''' % (
-            self.question_id, self.token_response)
+            self.question_id, self.tokens_response)

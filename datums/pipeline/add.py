@@ -2,50 +2,35 @@ from dateutil.parser import parse
 import uuid
 import json
 
-from .. import models
-from . import update, delete
+from datums import models
 
 
-class ResponseClassMapper(object):
-
-    def __init__(self, response_class, column, accessor):
-        self.response_class = response_class
-        self.column = column
-        self.accessor = accessor
-
-    def return_response(self, response):
-        response_cls = self.response_class()
-        setattr(response_cls, self.column, self.accessor(response))
-        return response_cls
-
-
-token_mapper = ResponseClassMapper(
-    models.TokenResponse, 'tokens_response',
+# TODO: move these bad boys elsewhere...
+token_accessor = models.base.ResponseClassLegacyAccessor(
+    models.TokenResponse, 'tokens_response', 
     (lambda x: [i['text'] for i in x.get('tokens', [])]))
 
-multi_mapper = ResponseClassMapper(
-    models.MultiResponse, 'multi_response',
-    (lambda x: x.get('answeredOptions')))
+multi_accessor = models.base.ResponseClassLegacyAccessor(
+    models.MultiResponse, 'multi_response', (lambda x: x.get('answeredOptions')))
 
-boolean_mapper = ResponseClassMapper(
+boolean_accessor = models.base.ResponseClassLegacyAccessor(
     models.BooleanResponse, 'boolean_response',
     (lambda x: bool(x.get('answeredOptions'))))
 
-location_mapper = ResponseClassMapper(
+location_accessor = models.base.ResponseClassLegacyAccessor(
     models.LocationResponse, ('location_response', 'venue_id'),
     (lambda x: (x['locationResponse'].get('text', None), x['locationResponse'].get('foursquareVenueId', None)) if x.get('locationResponse') else (None, None)))
 
-people_mapper = ResponseClassMapper(
+people_accessor = models.base.ResponseClassLegacyAccessor(
     models.PeopleResponse, 'people_response',
     (lambda x: [i['text'] for i in x.get('tokens', [])]))
 
-numeric_mapper = ResponseClassMapper(
+numeric_accessor = models.base.ResponseClassLegacyAccessor(
     models.NumericResponse, 'numeric_response',
     (lambda x: x.get('numericResponse')))
 
-note_mapper = ResponseClassMapper(
-    models.NoteResponse, 'numeric_response',
-    (lambda x: x.get('noteResponse')))
+note_accessor = models.base.ResponseClassLegacyAccessor(
+    models.NoteResponse, 'numeric_response', (lambda x: x.get('noteResponse')))
 
 
 def add_question(question):
@@ -165,21 +150,21 @@ def add_response(response, snapshot):
     question_id, response_type = models.session.query(
         models.Question.id, models.Question.type).filter(
             models.Question.prompt == response['questionPrompt']).first()
+    print 'Snapshot ID: %s -----> Question ID: %s' % (
+        snapshot['uniqueIdentifier'], question_id)
+
+    ids = {'question_id': question_id,  # set the question ID
+           'snapshot_id': snapshot['uniqueIdentifier']}  # set the snapshot ID
 
     # Dictionary mapping response type to response class, column, and accessor
     # mapper
-    response_mapper = {0: token_mapper, 1: multi_mapper, 2: boolean_mapper,
-                       3: location_mapper, 4: people_mapper, 5: numeric_mapper,
-                       6: note_mapper}
+    response_mapper = {0: token_accessor, 1: multi_accessor,
+                       2: boolean_accessor, 3: location_accessor,
+                       4: people_accessor, 5: numeric_accessor,
+                       6: note_accessor}
 
-    new_response = response_mapper[response_type].return_response(response)
-
-    filters = {'question_id': question_id,  # set the question ID
-               'snapshot_id': snapshot['uniqueIdentifier'],  # set the snapshot ID
-               response_mapper[response_type].column: getattr(
-                   new_response, response_mapper[response_type].column)}
-
-    new_response.get_or_create(**filters)
+    response_mapper[response_type].get_or_create_from_legacy_response(
+        response, **ids)
 
 
 def add_report(snapshot):
@@ -187,7 +172,7 @@ def add_report(snapshot):
     add_snapshot(snapshot)
     add_audio_snapshot(snapshot)
     add_location_snapshot(snapshot)
-    add_weather_snapshot(snapshot)
+    add_placemark_snapshot(snapshot)
     add_weather_snapshot(snapshot)
     # Add responses
     for response in snapshot['responses']:
