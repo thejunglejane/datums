@@ -34,7 +34,8 @@ numeric_accessor = models.base.ResponseClassLegacyAccessor(
     (lambda x: x.get('numericResponse')))
 
 note_accessor = models.base.ResponseClassLegacyAccessor(
-    models.NoteResponse, 'numeric_response', (lambda x: x.get('noteResponse')))
+    models.NoteResponse, 'note_response',
+    (lambda x: [i.get('text') for i in x.get('textResponses', [])]))
 
 
 def add_question(question):
