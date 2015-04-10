@@ -46,6 +46,16 @@ The schema is defined in the datums.models module.
 ### Populate the Database
 The datums.pipeline module allows you to add, update, and delete individual and bulk reports. 
 
+##### Definitions
+We should define a few terms before getting into how to use datums
+
+* A **reporter file** is a JSON file that contains all the **report**s for a given day. These files should be located in your Dropbox/Apps/Reporter-App folder. 
+* A **report** comprises a **snapshot** and all the **response**s collected by Reporter when you make a report.
+* A **snapshot** contains the information that the Reporter app automatically collects when you make a report, things like the weather, background noise, etc.
+* A **response** is the answer you enter for a question.
+
+Every **report** will have one **snapshot** and _n_ **response**s associated with it, and every **reporter file** will have _m_ **report**s associated with it, depending on how many times you make reports throughout the day.
+
 ##### Bulk
 When you first set datums up, you'll probably want to add all the reports in your Dropbox folder. To do this
 ```python
@@ -82,5 +92,3 @@ To add, update, or delete individual reports, datums expects a dictionary
 >>> first_snapshot = reports['snapshots'][0]
 >>> update.add_report(first_snapshot)
 ```
-
-# TODO: define the terms: report, report file, snapshot, response, question
