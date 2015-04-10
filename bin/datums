@@ -3,6 +3,14 @@ import logging
 import sys
 import os
 
+from datums import pipeline
+from datums.pipeline import add
+from datums.pipeline import update
+from datums.pipeline import delete
+
+from datums import models
+from datums.models import base
+
 '''bin/datums provides entry point main().'''
 
 
@@ -30,17 +38,29 @@ def create_parser():
     parser = argparse.ArgumentParser(
         prog='datums', description='PostgreSQL pipeline for Reporter.', usage='%(prog)s [options]')
     parser.add_argument(
+        '--setup', nargs=0, action='store_true',
+        help='Setup the datums database')
+    parser.add_argument(
+        '--teardown', nargs=0, action='store_true',
+        help='Tear down the datums database')
+    parser.add_argument(
         '--add', nargs=1, action='store_true',
-        help='Add new report')
+        help='Add new report to the database')
     parser.add_argument(
         '--update', nargs=1, action='store_true',
-        help='Update existing report')
+        help='Update existing report in the database')
     parser.add_argument(
         '--delete', nargs=1, action='store_true',
-        help='Delete existing report')
+        help='Delete existing report in the database')
     parser.add_argument(
         '--add-new', nargs=0, action='store_true',
-        help='Bulk add new reports')
+        help='Bulk add new reports in Dropbox folder')
+    parser.add_argumet(
+        '--update-all', nargs=0, action='store_true',
+        help='Update all existing reports in the database')
+    parser.add_argumet(
+        '--delete-all', nargs=0, action='store_true',
+        help='Delete all reports from the database')
     return parser
 
 
@@ -49,6 +69,18 @@ def main():
     parser = create_parser()
     args = parser.parse_args()
 
+    if args.setup:
+        base.database_setup(models.engine)
+    if args.teardown:
+        base.database_teardown(models.engine)
+    if args.add_new:
+        add.bulk_add_reports(pipeline.all_reporter_files)
+    if args.update_all:
+        # TODO: this should be existing reports
+        update.bulk_update_reports()
+    if args.delete_all:
+        # TODO: this should be existing reports
+        delete.bulk_delete_reports()
 
 if __name__ == '__main__':
     main()
