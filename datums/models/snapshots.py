@@ -34,7 +34,7 @@ class Snapshot(GhostBase):
 
     def __repr__(self):
         return '''<Snapshot(created_at='%s', report_impetus='%s', battery='%s',
-            steps='%s', section_identifier='%s', background='%s', 
+            steps='%s', section_identifier='%s', background='%s',
             connection='%s', draft='%s')>''' % (
                 self.created_at, self.report_impetus, self.battery, self.steps,
                 self.section_identifier, self.background, self.connection,
@@ -75,10 +75,10 @@ class LocationSnapshot(GhostBase):
 
     def __repr__(self):
         return '''<LocationSnapshot(created_at='%s', latitude='%s',
-            longitude='%s', altitude='%s', speed='%s', course='%s', 
+            longitude='%s', altitude='%s', speed='%s', course='%s',
             vertical_accuracy='%s', horizontal_accuracy='%s')>''' % (
                 self.created_at, self.latitude, self.longitude, self.altitude,
-                self.speed, self.course, self.vertical_accuracy, 
+                self.speed, self.course, self.vertical_accuracy,
                 self.horizontal_accuracy)
 
 
@@ -101,7 +101,7 @@ class PlacemarkSnapshot(GhostBase):
 
     def __repr__(self):
         return '''<PlacemarkSnapshot(street_number='%s', 'street_name'='%s',
-            address='%s', neighborhood='%s', city='%s', county='%s', state='%s', 
+            address='%s', neighborhood='%s', city='%s', county='%s', state='%s',
             country='%s', postal_code='%s', region='%s')>''' % (
                 self.street_number, self.street_name, self.address,
                 self.neighborhood, self.city, self.county, self.state,
@@ -137,19 +137,20 @@ class WeatherSnapshot(GhostBase):
     uv = Column(Numeric)  # uv
 
     def __repr__(self):
-        return '''<WeatherSnapshot(station_id='%s', latitude='%s', 
+        return '''<WeatherSnapshot(station_id='%s', latitude='%s',
             longitude='%s', weather='%s', temperature_fahrenheit='%s',
             temperature_celsius='%s', feels_like_fahrenheit='%s',
             feels_like_celsius='%s', wind_direction='%s', wind_degrees='%s',
             wind_mph='%s', wind_kph='%s', wind_gust_mph='%s',
             wind_gust_kph='%s', relative_humidity='%s', precipitation_in='%s',
-            precipitation_mm='%s', dewpoint_celsius='%s', visibility_mi='%s', 
+            precipitation_mm='%s', dewpoint_celsius='%s', visibility_mi='%s',
             visibility_km='%s', uv='%s')>''' % (
                 self.station_id, self.latitude, self.longitude, self.weather,
                 self.temperature_fahrenheit, self.temperature_celsius,
                 self.feels_like_fahrenheit, self.feels_like_celsius,
-                self.wind_direction, self.wind_degrees, self.wind_mph, 
+                self.wind_direction, self.wind_degrees, self.wind_mph,
                 self.wind_kph, self.wind_gust_mph, self.wind_gust_kph,
-                self.relative_humidity, self.precipitation_in, 
-                self.precipitation_mm, self.dewpoint_celsius, 
+                self.relative_humidity, self.precipitation_in,
+                self.precipitation_mm, self.dewpoint_celsius,
                 self.visibility_mi, self.visibility_km, self.uv)
+

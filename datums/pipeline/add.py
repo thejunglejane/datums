@@ -7,7 +7,7 @@ from datums import models
 
 # TODO: move these bad boys elsewhere...
 token_accessor = models.base.ResponseClassLegacyAccessor(
-    models.TokenResponse, 'tokens_response', 
+    models.TokenResponse, 'tokens_response',
     (lambda x: [i['text'] for i in x.get('tokens', [])]))
 
 multi_accessor = models.base.ResponseClassLegacyAccessor(
@@ -19,7 +19,7 @@ boolean_accessor = models.base.ResponseClassLegacyAccessor(
     (lambda x: bool(x.get('answeredOptions'))))
 
 location_accessor = models.base.LocationResponseClassLegacyAccessor(
-    models.LocationResponse, 'location_response',  
+    models.LocationResponse, 'location_response',
     (lambda x: x['locationResponse'].get(
         'text') if x.get('locationResponse') else None),
     'venue_id', (lambda x: x['locationResponse'].get(
@@ -52,7 +52,7 @@ def add_snapshot(snapshot):
         'battery': snapshot.get('battery'), 'steps': snapshot.get('steps'),
         'section_identifier': snapshot.get('sectionIdentifier'),
         'background': snapshot.get('background'),
-        'connection': snapshot.get('connection'), 
+        'connection': snapshot.get('connection'),
         'draft': bool(snapshot.get('draft'))}
     models.Snapshot.get_or_create(**snapshot_dict)
 
@@ -110,7 +110,7 @@ def add_weather_snapshot(snapshot):
         'station_id': weather_snapshot.get('stationID'),
         'latitude': weather_snapshot.get('latitude'),
         'longitude': weather_snapshot.get('longitude'),
-        'weather': weather_snapshot.get('weather'), 
+        'weather': weather_snapshot.get('weather'),
         'temperature_fahrenheit': weather_snapshot.get('tempF'),
         'temperature_celsius': weather_snapshot.get('tempC'),
         'feels_like_fahrenheit': weather_snapshot.get('feelslikeF'),
