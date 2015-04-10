@@ -54,28 +54,28 @@ class ResponseClassLegacyAccessor(object):
             session.commit()
 
 
-class LocationResponseClassLegacyAccessor(object):
+class LocationResponseClassLegacyAccessor(ResponseClassLegacyAccessor):
 
-    def __init__(self, response_class, location_column, venue_column, location_accessor, venue_accessor):
-        self.response_class = response_class
-        self.location_column = location_column
+    def __init__(self, response_class, column, accessor, venue_column, venue_accessor):
+        super(LocationResponseClassLegacyAccessor, self).__init__(
+            response_class, column, accessor)
         self.venue_column = venue_column
-        self.location_accessor = location_accessor
         self.venue_accessor = venue_accessor
 
     def get_or_create_from_legacy_response(self, response, **kwargs):
+        ResponseClassLegacyAccessor.get_or_create_from_legacy_response(
+            self, response, **kwargs)
         response_cls = self.response_class(**kwargs)
         # Return the existing or newly created response record for the unique
         # question_id, snapshot_id pair
         response_cls = response_cls.get_or_create(**kwargs)
         # If the record does not have a response, add it
-        if not getattr(response_cls, self.location_column):
-            setattr(response_cls, self.location_column,
-                    self.location_accessor(response))
+        if not getattr(response_cls, self.column):
+            setattr(response_cls, self.column, self.accessor(response))
         if not getattr(response_cls, self.venue_column):
             setattr(
                 response_cls, self.venue_column, self.venue_accessor(response))
-
+            
         session.add(response_cls)
         session.commit()
 

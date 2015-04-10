@@ -19,10 +19,10 @@ boolean_accessor = models.base.ResponseClassLegacyAccessor(
     (lambda x: bool(x.get('answeredOptions'))))
 
 location_accessor = models.base.LocationResponseClassLegacyAccessor(
-    models.LocationResponse, 'location_response', 'venue_id',
+    models.LocationResponse, 'location_response',  
     (lambda x: x['locationResponse'].get(
         'text', None) if x.get('locationResponse') else None),
-    (lambda x: x['locationResponse'].get(
+    'venue_id', (lambda x: x['locationResponse'].get(
         'foursquareVenueId', None) if x.get('locationResponse') else None))
 
 people_accessor = models.base.ResponseClassLegacyAccessor(
