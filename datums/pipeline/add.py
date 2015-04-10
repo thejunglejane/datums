@@ -11,15 +11,19 @@ token_accessor = models.base.ResponseClassLegacyAccessor(
     (lambda x: [i['text'] for i in x.get('tokens', [])]))
 
 multi_accessor = models.base.ResponseClassLegacyAccessor(
-    models.MultiResponse, 'multi_response', (lambda x: x.get('answeredOptions')))
+    models.MultiResponse, 'multi_response',
+    (lambda x: x.get('answeredOptions')))
 
 boolean_accessor = models.base.ResponseClassLegacyAccessor(
     models.BooleanResponse, 'boolean_response',
     (lambda x: bool(x.get('answeredOptions'))))
 
-location_accessor = models.base.ResponseClassLegacyAccessor(
-    models.LocationResponse, ('location_response', 'venue_id'),
-    (lambda x: (x['locationResponse'].get('text', None), x['locationResponse'].get('foursquareVenueId', None)) if x.get('locationResponse') else (None, None)))
+location_accessor = models.base.LocationResponseClassLegacyAccessor(
+    models.LocationResponse, 'location_response', 'venue_id',
+    (lambda x: x['locationResponse'].get(
+        'text', None) if x.get('locationResponse') else None),
+    (lambda x: x['locationResponse'].get(
+        'foursquareVenueId', None) if x.get('locationResponse') else None))
 
 people_accessor = models.base.ResponseClassLegacyAccessor(
     models.PeopleResponse, 'people_response',
