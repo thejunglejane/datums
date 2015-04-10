@@ -11,8 +11,8 @@ class Question(GhostBase):
     __tablename__ = 'questions'
 
     id = Column(Integer, primary_key=True, unique=True)
-    type = Column(Integer)  # questionType
-    prompt = Column(String)  # questionPrompt
+    type = Column(Integer, nullable=False)  # questionType
+    prompt = Column(String, nullable=False)  # questionPrompt
 
     def __repr__(self):
         return '''<Question(type='%s', prompt='%s')>''' % (self.type,
