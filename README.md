@@ -15,7 +15,7 @@ $ python setup.py install
 Rename the .env-example file to .env and fill in your information.
 
 ```
-export REPORTER_PATH=<your reporter path here>
+export REPORTER_PATH=<your Reporter Dropbox path here>
 export DATABASE_URI=postgresql://<your postgres user here>@localhost:5432/datums
 export LOG_FILENAME=<your log filename here>
 ```
