@@ -9,11 +9,11 @@ def readme():
 
 setup(
     name = 'datums',
-    packages = ['datums.pipeline', 'datums.models'],
+    packages = ['datums.pipeline', 'datums.models', 'datums.accessors'],
     scripts = ['bin/datums'],
     version = __version__,
     description = 'A PostgreSQL pipeline for Reporter data.',
     author = 'Jane Stewart Adams',
     author_email = 'jane@thejunglejane.com',
-    install_requires = ['sqlalchemy']
+    install_requires = ['sqlalchemy', 'sqlalchemy-utils', 'python-dateutil']
 )
