@@ -38,7 +38,8 @@ class GhostBase(Base):
     def update(cls, snapshot, **kwargs):
         '''
         If a record matching the instance id already exists in the database, 
-        update it.
+        update it. If a record matching the instance id does not already exist,
+        create a new record.
         '''
         q = session.query(cls).filter_by(**kwargs).first()
         if q:
@@ -46,6 +47,8 @@ class GhostBase(Base):
                 q.__dict__.update(k=snapshot[k])
             session.add(q)
             session.commit()
+        else:
+            cls.get_or_create(**kwargs)
 
     @classmethod
     def delete(cls, **kwargs):
@@ -84,6 +87,8 @@ class ResponseClassLegacyAccessor(object):
             setattr(response_cls, self.column, self.accessor(response))
             session.add(response_cls)
             session.commit()
+        else:
+            response_cls.get_or_create_from_legacy_response(response, **kwargs)
 
     def delete(self, response, **kwargs):
         response_cls = self.response_class(**kwargs)
