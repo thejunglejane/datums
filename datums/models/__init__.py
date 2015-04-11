@@ -6,5 +6,3 @@ from snapshots import *
 
 import base
 from base import session, engine
-
-
