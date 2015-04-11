@@ -3,39 +3,7 @@ import uuid
 import json
 
 from datums import models
-
-
-# TODO: move these bad boys elsewhere...
-token_accessor = models.base.ResponseClassLegacyAccessor(
-    models.TokenResponse, 'tokens_response', 
-    (lambda x: [i['text'] for i in x.get('tokens', [])]))
-
-multi_accessor = models.base.ResponseClassLegacyAccessor(
-    models.MultiResponse, 'multi_response',
-    (lambda x: x.get('answeredOptions')))
-
-boolean_accessor = models.base.ResponseClassLegacyAccessor(
-    models.BooleanResponse, 'boolean_response',
-    (lambda x: bool(x.get('answeredOptions'))))
-
-location_accessor = models.base.LocationResponseClassLegacyAccessor(
-    models.LocationResponse, 'location_response',  
-    (lambda x: x['locationResponse'].get(
-        'text') if x.get('locationResponse') else None),
-    'venue_id', (lambda x: x['locationResponse'].get(
-        'foursquareVenueId') if x.get('locationResponse') else None))
-
-people_accessor = models.base.ResponseClassLegacyAccessor(
-    models.PeopleResponse, 'people_response',
-    (lambda x: [i['text'] for i in x.get('tokens', [])]))
-
-numeric_accessor = models.base.ResponseClassLegacyAccessor(
-    models.NumericResponse, 'numeric_response',
-    (lambda x: x.get('numericResponse')))
-
-note_accessor = models.base.ResponseClassLegacyAccessor(
-    models.NoteResponse, 'note_response',
-    (lambda x: [i.get('text') for i in x.get('textResponses', [])]))
+import codec
 
 
 def add_question(question):
@@ -52,7 +20,7 @@ def add_snapshot(snapshot):
         'battery': snapshot.get('battery'), 'steps': snapshot.get('steps'),
         'section_identifier': snapshot.get('sectionIdentifier'),
         'background': snapshot.get('background'),
-        'connection': snapshot.get('connection'), 
+        'connection': snapshot.get('connection'),
         'draft': bool(snapshot.get('draft'))}
     models.Snapshot.get_or_create(**snapshot_dict)
 
@@ -110,7 +78,7 @@ def add_weather_snapshot(snapshot):
         'station_id': weather_snapshot.get('stationID'),
         'latitude': weather_snapshot.get('latitude'),
         'longitude': weather_snapshot.get('longitude'),
-        'weather': weather_snapshot.get('weather'), 
+        'weather': weather_snapshot.get('weather'),
         'temperature_fahrenheit': weather_snapshot.get('tempF'),
         'temperature_celsius': weather_snapshot.get('tempC'),
         'feels_like_fahrenheit': weather_snapshot.get('feelslikeF'),
@@ -132,25 +100,9 @@ def add_weather_snapshot(snapshot):
 
 
 def add_response(response, snapshot):
-    # Determine the question ID and response type based on the prompt
-    question_id, response_type = models.session.query(
-        models.Question.id, models.Question.type).filter(
-            models.Question.prompt == response['questionPrompt']).first()
-    print 'Snapshot ID: %s -----> Question ID: %s' % (
-        snapshot['uniqueIdentifier'], question_id)
-
-    ids = {'question_id': question_id,  # set the question ID
-           'snapshot_id': snapshot['uniqueIdentifier']}  # set the snapshot ID
-
-    # Dictionary mapping response type to response class, column, and accessor
-    # mapper
-    response_mapper = {0: token_accessor, 1: multi_accessor,
-                       2: boolean_accessor, 3: location_accessor,
-                       4: people_accessor, 5: numeric_accessor,
-                       6: note_accessor}
-
-    response_mapper[response_type].get_or_create_from_legacy_response(
-        response, **ids)
+    accessor, ids = codec.get_response_accessor(response, snapshot)
+    print 'Snapshot: ', ids['snapshot_id'], '---> Question: ', ids['question_id']
+    accessor.get_or_create_from_legacy_response(response, **ids)
 
 
 def add_report(snapshot):
@@ -168,12 +120,13 @@ def add_report(snapshot):
 def bulk_add_reports(files):
     if not isinstance(files, list):
         files = [files]
-    # Add all reports for the files in files
+    # Add all questions and reports for the files in files
     for file in files:
         with open(file, 'r') as f:
             report = json.load(f)
         # Add questions
         for question in report['questions']:
+            print 'Question ID: ', question['uniqueIdentifier'], '---> Prompt: ', question['prompt']
             add_question(question)
         for snapshot in report['snapshots']:
             add_report(snapshot)

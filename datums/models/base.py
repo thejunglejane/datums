@@ -34,6 +34,29 @@ class GhostBase(Base):
         session.commit()
         return q
 
+    @classmethod
+    def update(cls, snapshot, **kwargs):
+        '''
+        If a record matching the instance id already exists in the database, 
+        update it.
+        '''
+        q = session.query(cls).filter_by(**kwargs).first()
+        if q:
+            for k in snapshot:
+                q.__dict__.update(k=snapshot[k])
+            session.add(q)
+            session.commit()
+
+    @classmethod
+    def delete(cls, **kwargs):
+        '''
+        If a record matching the instance id exists in the database, delete it.
+        '''
+        q = session.query(cls).filter_by(**kwargs).first()
+        if q:
+            session.delete(q)
+            session.commit()
+
 
 class ResponseClassLegacyAccessor(object):
 
@@ -44,13 +67,31 @@ class ResponseClassLegacyAccessor(object):
 
     def get_or_create_from_legacy_response(self, response, **kwargs):
         response_cls = self.response_class(**kwargs)
-        # Return the existing or newly created response record for the unique
-        # question_id, snapshot_id pair
+        # Return the existing or newly created response record
         response_cls = response_cls.get_or_create(**kwargs)
         # If the record does not have a response, add it
         if not getattr(response_cls, self.column):
             setattr(response_cls, self.column, self.accessor(response))
             session.add(response_cls)
+            session.commit()
+
+    def update(self, response, **kwargs):
+        response_cls = self.response_class(**kwargs)
+        # Return the existing response record
+        response_cls = session.query(
+            response_cls.__class__).filter_by(**kwargs).first()
+        if response_cls:
+            setattr(response_cls, self.column, self.accessor(response))
+            session.add(response_cls)
+            session.commit()
+
+    def delete(self, response, **kwargs):
+        response_cls = self.response_class(**kwargs)
+        # Return the existing response record
+        response_cls = session.query(
+            response_cls.__class__).filter_by(**kwargs).first()
+        if response_cls:
+            session.delete(response_cls)
             session.commit()
 
 
@@ -66,8 +107,7 @@ class LocationResponseClassLegacyAccessor(ResponseClassLegacyAccessor):
         ResponseClassLegacyAccessor.get_or_create_from_legacy_response(
             self, response, **kwargs)
         response_cls = self.response_class(**kwargs)
-        # Return the existing or newly created response record for the unique
-        # question_id, snapshot_id pair
+        # Return the existing or newly created response record
         response_cls = response_cls.get_or_create(**kwargs)
         # If the record does not have a response, add it
         if not getattr(response_cls, self.column):
@@ -75,9 +115,21 @@ class LocationResponseClassLegacyAccessor(ResponseClassLegacyAccessor):
         if not getattr(response_cls, self.venue_column):
             setattr(
                 response_cls, self.venue_column, self.venue_accessor(response))
-            
+
         session.add(response_cls)
         session.commit()
+
+    def update(self, response, **kwargs):
+        response_cls = self.response_class(**kwargs)
+        # Return the existing response record
+        response_cls = session.query(
+            response_cls.__class__).filter_by(**kwargs).first()
+        if response_cls:
+            setattr(response_cls, self.column, self.accessor(response))
+            setattr(
+                response_cls, self.venue_column, self.venue_accessor(response))
+            session.add(response_cls)
+            session.commit()
 
 
 def database_setup(engine):
