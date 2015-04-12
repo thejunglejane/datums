@@ -12,7 +12,7 @@ setup(
     packages = ['datums.pipeline', 'datums.models'],
     scripts = ['bin/datums'],
     version = __version__,
-    description = 'A PostgreSQL pipeline for Reporter data.',
+    description = 'A PostgreSQL pipeline for Reporter.',
     author = 'Jane Stewart Adams',
     author_email = 'jane@thejunglejane.com',
     install_requires = ['sqlalchemy', 'sqlalchemy-utils', 'python-dateutil']
