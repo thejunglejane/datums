@@ -1,4 +1,4 @@
-![datums_header](header.png)
+![datums_header](images/header.png)
 
 Datums is a PostgreSQL pipeline for [Reporter](http://www.reporter-app.com/). Datums will insert records from the Dropbox folder that contains your exported Reporter data<sup>[1](#notes)</sup> into PostgreSQL.
 
@@ -39,7 +39,7 @@ You should now have both the `datums` executable and Python library installed.
 
 Before adding any reports, you'll need to setup the database schema. The database schema is defined in the `models` module. Here's a picture
 
-![data_model](data_model.png)
+![data_model](images/data_model.png)
 
 You can setup the database from the command line or from Python. From the command line, execute `datums` with the `--setup` flag.
 ```
