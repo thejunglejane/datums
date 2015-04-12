@@ -9,7 +9,7 @@ def readme():
 
 setup(
     name = 'datums',
-    packages = ['datums.pipeline', 'datums.models', 'datums.accessors'],
+    packages = ['datums.pipeline', 'datums.models'],
     scripts = ['bin/datums'],
     version = __version__,
     description = 'A PostgreSQL pipeline for Reporter data.',
