@@ -56,39 +56,128 @@ We should define a few terms before getting into how to use datums
 
 Every **report** will have one **snapshot** and _n_ **response**s associated with it, and every **reporter file** will have _m_ **report**s associated with it, depending on how many times you make reports throughout the day.
 
-##### Bulk
-When you first set datums up, you'll probably want to add all the reports in your Dropbox folder. To do this
+## Adding questions and reports
+When you first set datums up, you'll probably want to add all the questions and reports in your Dropbox Reporter folder. To do this
 ```python
->>> from datums import pipeline
 >>> from datums.pipeline import add
->>> add.bulk_add_reports(pipeline.all_reporter_files)
+>>> import glob
+>>> import json
+>>> all_reporter_files = glob.glob('/path/to/reporter/folder/', '*.json'))
+>>> for file in all_reporter_files:
+...    with open(os.path.expanduser(file), 'r') as f:
+...        day = json.load(f)
+...    # Add questions first because reports need them
+...    for question in day['questions']:
+...        add.add_question(question)
+...    for report in day['snapshots']:
+...        add.add_report(report)
 ```
 
-`pipeline.all_reporter_files` is a list of all the JSON files in the `REPORTER_PATH` specified in your .env. If you make a change to one of those files, or if Reporter makes a change to one of those files, you can also update all your reports in bulk. If a new report has appeared, the bulk update will create it in the database, too.
+To add the reports from a single file
 ```python
->>> from datums import pipeline
+>>> from datums.pipeline import add
+>>> import json
+>>> with open('/path/to/file', 'r') as f:
+...    day = json.load(f)
+>>> for report in day['snapshots']:
+...    add.add_report(report)
+```
+
+And to add a single report within a file
+```python
+>>> from datums.pipeline import add
+>>> import json
+>>> with open('/path/to/file', 'r') as f:
+...    day = json.load(f)
+>>> report = day['snapshots'][1]  # the second report in the file
+>>> add.add_report(report)
+```
+
+## Updating reports
+
+If you make a change to one of your Reporter files, or if Reporter makes a change to one of those files, you can also update your reports. If a new report has been added the file at `/path/to/file`, the update will create it in the database.
+
+To update all reports in all the files in your Dropbox Reporter folder
+```python
 >>> from datums.pipeline import update
->>> add.bulk_update_reports(pipeline.all_reporter_files)
+>>> import glob
+>>> import json
+>>> all_reporter_files = glob.glob('/path/to/reporter/folder/', '*.json'))
+>>> for file in all_reporter_files:
+...    with open(os.path.expanduser(file), 'r') as f:
+...        day = json.load(f)
+...    for report in day['snapshots']:
+...        update.update_report(report)
 ```
 
-And, the same with bulk deleting reports. You can just tear down the database with `base.database_teardown()`, or you can bulk delete all reports with
+To update all the reports in a single file
 ```python
->>> from datums import pipeline
+>>> from datums.pipeline import update
+>>> import json
+>>> with open('/path/to/file', 'r') as f:
+...    day = json.load(f)
+>>> for report in day['snapshots']:
+...    update.update_report(report)
+```
+
+You can also update an individual report within a file with
+```python
+>>> from datums.pipeline import update
+>>> import json
+>>> with open('/path/to/file', 'r') as f:
+...    day = json.load(f)
+>>> report = day['snapshots'][1]  # the second report in the file
+>>> update.update_report(report)
+```
+#### Changing a Report
+While it's possible to change your response to a question from Python, it's not recommended. Datums won't overwrite the contents of your files, and you will lose the changes that you make the next time you update the reports in that file. If you make changes to a file itself, you may run into conflicts if Reporter tries to update that file.
+
+If you do need to change your response to a question, I recommend that you do so from the Reporter app. The list icon in the top left corner will display all of your reports, and you can select a report and make changes. If you have 'Save to Dropbox' enabled, the Dropbox file containing that report will be updated when you save your changes; if you don't have 'Save to Dropbox' enabled, the file containing the report will be updated the next time you export. Once the file is updated, you can follow the steps above to update the reports in that file in the database.
+
+## Deleting reports
+
+Deleting reports from the database is the same. You can delete all reports with
+```python
 >>> from datums.pipeline import delete
->>> add.bulk_delete_reports(pipeline.all_reporter_files)
+>>> import glob
+>>> import json
+>>> all_reporter_files = glob.glob('/path/to/reporter/folder/', '*.json'))
+>>> for file in all_reporter_files:
+...    with open(os.path.expanduser(file), 'r') as f:
+...        day = json.load(f)
+...    for report in day['snapshots']:
+...        delete.delete_report(report)
 ```
 
-You can also pass a single filename, or your own list of filenames, to `add.bulk_add_reports()`. Because each file contains _n_ reports for a given day, this is still a bulk operation.
+or delete the reports in a single file from the database with
+```python
+>>> from datums.pipeline import delete
+>>> import json
+>>> with open('/path/to/file', 'r') as f:
+...    day = json.load(f)
+>>> for report in day['snapshots']:
+...    delete.delete_report(report)
+```
 
-##### Individual
-To add, update, or delete individual reports, datums expects a dictionary
+And to delete a single report within a file
+```python
+>>> from datums.pipeline import delete
+>>> import json
+>>> with open('/path/to/file', 'r') as f:
+...    day = json.load(f)
+>>> report = day['snapshots'][1]  # the second report in the file
+>>> delete.delete_report(report)
+```
+
+### Deleting questions
+
+You can also delete questions from the database. Note that this will delete any responses associated with the question as well.
 
 ```python
->>> from datums import pipeline
->>> from datums.pipeline import update
->>> first_file = pipeline.all_reporter_files[0]
->>> with open(first_file, 'r') as f:
-...     reports = json.load(f)
->>> first_snapshot = reports['snapshots'][0]
->>> update.add_report(first_snapshot)
+>>> from datums.pipeline import delete
+>>> import json
+>>> with open('/path/to/file', 'r') as f:
+...    day = json.load(f)
+>>> question in day['questions'][0]
+>>> delete.delete_question(question)
 ```

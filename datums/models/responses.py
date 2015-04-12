@@ -19,9 +19,6 @@ class Response(GhostBase):
     question_id = Column(Integer, ForeignKey('questions.id'))
     type = Column(String)
 
-    question = relationship(
-        'Question', backref=backref('responses', order_by=id))
-
     __mapper_args__ = {
         'polymorphic_on': type
     }
