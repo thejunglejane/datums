@@ -37,7 +37,9 @@ You should now have both the `datums` executable and Python library installed.
 
 ### Setup the Database
 
-Before adding any reports, you'll need to setup the database schema. The database schema is defined in the `models` module, but here's a picture.
+Before adding any reports, you'll need to setup the database schema. The database schema is defined in the `models` module. Here's a picture
+
+![data_model](data_model.png)
 
 You can setup the database from the command line or from Python. From the command line, execute `datums` with the `--setup` flag.
 ```
