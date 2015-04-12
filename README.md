@@ -2,24 +2,29 @@ Datums is a PostgreSQL pipeline for [Reporter](http://www.reporter-app.com/). Da
 
 > ["Self-tracking is only useful if it leads to new self-knowledge and—ultimately—new action."](https://medium.com/buster-benson/how-i-track-my-life-7da6f22b8e2c)
 
-# Installation
+# Getting Started
 
-To install datums, clone this repository and run the setup script
+## Installation
+
+To install datums, first clone this repository
 ```
 $ git clone https://github.com/thejunglejane/datums.git
 $ cd datums
+```
+
+## Configuration
+Rename the .env-example file to .env and fill in your database information.
+
+```
+export DATABASE_URI=postgresql://<your postgres user here>@localhost:5432/datums
+```
+
+If you're not using a tool like [autoenv](https://github.com/kennethreitz/autoenv), you'll need to source the .env after filling in your information. Then, run the setup script
+
+```
+$ source .env
 $ python setup.py install
 ```
-
-# Configuration
-Rename the .env-example file to .env and fill in your information.
-
-```
-export REPORTER_PATH=<your Reporter Dropbox path here>
-export DATABASE_URI=postgresql://<your postgres user here>@localhost:5432/datums
-export LOG_FILENAME=<your log filename here>
-```
-If you're not using a tool like [autoenv](https://github.com/kennethreitz/autoenv), you'll need to source the .env after filling in your information.
 
 ### Setup the Database
 To create the datums database, first ensure that you have postgres installed and that the server is running locally. To create the database
@@ -28,10 +33,14 @@ $ createdb datums --owner=username
 ```
 where `username` is the output of `whoami`. You're obviously free to name the database whatever you want, just make sure that `DATABASE_URI` refers to the right database.
 
-To setup the schema in the database
+To setup the database
 ```python
 >>> from datums.models import base
 >>> base.database_setup(base.engine)
+```
+or
+```python
+$ datums --setup
 ```
 
 and to tear down the database (if you ever need to)
@@ -39,15 +48,16 @@ and to tear down the database (if you ever need to)
 >>> from datums.models import base
 >>> base.database_teardown(base.engine)
 ```
+or
+```python
+$ datums --teardown
+```
 
-The schema is defined in the datums.models module.
-[DATA MODEL]
-
-### Populate the Database
-The datums.pipeline module allows you to add, update, and delete individual and bulk reports. 
+# Adding, Updating, and Deleting
+The `datums.pipeline` module allows you to add, update, and delete reports and questions. 
 
 ##### Definitions
-We should define a few terms before getting into how to use datums
+We should define a few terms before getting into how to use the datums pipeline.
 
 * A **reporter file** is a JSON file that contains all the **report**s for a given day. These files should be located in your Dropbox/Apps/Reporter-App folder. 
 * A **report** comprises a **snapshot** and all the **response**s collected by Reporter when you make a report.
