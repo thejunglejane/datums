@@ -37,7 +37,6 @@ def delete_weather_snapshot(snapshot):
 
 def delete_response(response, snapshot):
     accessor, ids = codec.get_response_accessor(response, snapshot)
-    print 'Snapshot: ', ids['snapshot_id'], '---> Question: ', ids['question_id']
     accessor.delete(response, **ids)
 
 
@@ -51,22 +50,3 @@ def delete_report(snapshot):
     # Delete responses
     for response in snapshot['responses']:
         delete_response(response, snapshot)
-
-
-def bulk_delete_reports(files):
-    if not isinstance(files, list):
-        files = [files]
-    # Delete all reports in each file in files
-    for file in files:
-        with open(file, 'r') as f:
-            file_day = json.load(f)
-        # Delete snapshots for that day
-        for snapshot in file_day['snapshots']:
-            delete_report(snapshot)
-    # Delete all questions in each file in files
-    for file in files:
-        with open(file, 'r') as f:
-            file_day = json.load(f)
-        # Delete questions for that day
-        for question in file_day['questions']:
-            delete_question(question)

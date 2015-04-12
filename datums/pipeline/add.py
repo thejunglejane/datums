@@ -101,7 +101,6 @@ def add_weather_snapshot(snapshot):
 
 def add_response(response, snapshot):
     accessor, ids = codec.get_response_accessor(response, snapshot)
-    print 'Snapshot: ', ids['snapshot_id'], '---> Question: ', ids['question_id']
     accessor.get_or_create_from_legacy_response(response, **ids)
 
 
@@ -115,18 +114,3 @@ def add_report(snapshot):
     # Add responses
     for response in snapshot['responses']:
         add_response(response, snapshot)
-
-
-def bulk_add_reports(files):
-    if not isinstance(files, list):
-        files = [files]
-    # Add all questions and reports for the files in files
-    for file in files:
-        with open(file, 'r') as f:
-            report = json.load(f)
-        # Add questions
-        for question in report['questions']:
-            print 'Question ID: ', question['uniqueIdentifier'], '---> Prompt: ', question['prompt']
-            add_question(question)
-        for snapshot in report['snapshots']:
-            add_report(snapshot)
