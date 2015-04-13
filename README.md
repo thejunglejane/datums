@@ -246,9 +246,7 @@ You can also delete questions from the database. Note that this will delete any 
 
 1. This version of datums only supports JSON exports.
 
-# License
-
-The MIT License (MIT)
+# Licensing
 
 Copyright (c) 2015 Jane Stewart Adams
 
