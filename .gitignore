@@ -3,6 +3,7 @@
 *.sh
 *.pyc
 *.swp
+*.sketch
 
 build/*
 datums.egg-info/*

@@ -1,8 +1,5 @@
-<!-- ![datums_header](images/header.png) -->
-
-<a href="url"><img src="http://www.github.com/thejunglejane/datums/images/header.png" align="left" height="100" ></a>  
-
-
+![datums_header](images/header.png)
+ 
 Datums is a PostgreSQL pipeline for [Reporter](http://www.reporter-app.com/). Datums will insert records from the Dropbox folder that contains your exported Reporter data<sup>[1](#notes)</sup> into PostgreSQL.
 
 > ["Self-tracking is only useful if it leads to new self-knowledge and—ultimately—new action."](https://medium.com/buster-benson/how-i-track-my-life-7da6f22b8e2c)
@@ -250,6 +247,8 @@ You can also delete questions from the database. Note that this will delete any 
 1. This version of datums only supports JSON exports.
 
 # Licensing
+
+Datums is licensed under the MIT License, so please share, enjoy, and improve.
 
 Copyright (c) 2015 Jane Stewart Adams
 
