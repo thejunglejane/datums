@@ -84,13 +84,13 @@ When you first set datums up, you'll probably want to add all the questions and 
 To add all the reporter files in your Dropbox Reporter folder from the command line, execute `datums` with the `--add` flag followed by the path to your Dropbox Reporter folder
 
 ```
-$ datums --add /path/to/reporter/folder/*.json
+$ datums --add "/path/to/reporter/folder/*.json"
 ```
 Make sure you include the '*.json' at the end to exclude the extra files in that folder. 
 
 To add the questions and reports from a single reporter file, include the filepath after the `--add` flag instead of the directory's path
 ```
-$ datums --add /path/to/file
+$ datums --add "/path/to/file"
 ```
 
 #### Python
@@ -100,7 +100,8 @@ You can add all the reporter files or a single reporter file from Python as well
 >>> from datums.pipeline import add
 >>> import glob
 >>> import json
->>> all_reporter_files = glob.glob('/path/to/reporter/folder/', '*.json'))
+>>> import os
+>>> all_reporter_files = glob.glob(os.path.join('/path/to/reporter/folder/', '*.json'))
 >>> for file in all_reporter_files:
 ...    with open(os.path.expanduser(file), 'r') as f:
 ...        day = json.load(f)
@@ -141,11 +142,11 @@ If you make a change to one of your Reporter files, or if Reporter makes a chang
 To update all reports in all the files in your Dropbox Reporter folder
 
 ```
-$ datums --update /path/to/reporter/folder/*.json
+$ datums --update "/path/to/reporter/folder/*.json"
 ```
 and to update all the reports in a single reporter file
 ```
-$ datums --update /path/to/file
+$ datums --update "/path/to/file"
 ```
 
 #### Python
@@ -154,7 +155,8 @@ From Python
 >>> from datums.pipeline import update
 >>> import glob
 >>> import json
->>> all_reporter_files = glob.glob('/path/to/reporter/folder/', '*.json'))
+>>> import os
+>>> all_reporter_files = glob.glob(os.path.join('/path/to/reporter/folder/', '*.json'))
 >>> for file in all_reporter_files:
 ...    with open(os.path.expanduser(file), 'r') as f:
 ...        day = json.load(f)
@@ -191,11 +193,11 @@ Deleting reports from the database is much the same.
 #### Command Line
 You can delete all reports in your Dropbox Reporter folder with
 ```
-$ datums --delete /path/to/reporter/folder/*.json
+$ datums --delete "/path/to/reporter/folder/*.json"
 ```
 and the reports in a single file with
 ```
-$ datums --delete /path/to/file
+$ datums --delete "/path/to/file"
 ```
 
 #### Python
@@ -203,7 +205,8 @@ $ datums --delete /path/to/file
 >>> from datums.pipeline import delete
 >>> import glob
 >>> import json
->>> all_reporter_files = glob.glob('/path/to/reporter/folder/', '*.json'))
+>>> import os
+>>> all_reporter_files = glob.glob(os.path.join('/path/to/reporter/folder/', '*.json'))
 >>> for file in all_reporter_files:
 ...    with open(os.path.expanduser(file), 'r') as f:
 ...        day = json.load(f)
