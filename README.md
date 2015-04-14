@@ -1,4 +1,7 @@
-![datums_header](images/header.png)
+<!-- ![datums_header](images/header.png) -->
+
+<a href="url"><img src="http://www.github.com/thejunglejane/datums/images/header.png" align="left" height="100" ></a>  
+
 
 Datums is a PostgreSQL pipeline for [Reporter](http://www.reporter-app.com/). Datums will insert records from the Dropbox folder that contains your exported Reporter data<sup>[1](#notes)</sup> into PostgreSQL.
 
