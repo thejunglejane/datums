@@ -1,5 +1,13 @@
 from datums import models
 
+
+def human_to_boolean(human):
+    if not isinstance(human, list) or len(human) == 0:
+        return None
+    if human[0].lower() == 'yes':
+        return True
+    return False
+
 token_accessor = models.base.ResponseClassLegacyAccessor(
     models.TokenResponse, 'tokens_response',
     (lambda x: [i['text'] for i in x.get('tokens', [])]))
@@ -10,7 +18,7 @@ multi_accessor = models.base.ResponseClassLegacyAccessor(
 
 boolean_accessor = models.base.ResponseClassLegacyAccessor(
     models.BooleanResponse, 'boolean_response',
-    (lambda x: bool(x.get('answeredOptions'))))
+    (lambda x: human_to_boolean(x.get('answeredOptions'))))
 
 location_accessor = models.base.LocationResponseClassLegacyAccessor(
     models.LocationResponse, 'location_response',
