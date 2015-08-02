@@ -33,7 +33,7 @@ people_accessor = models.base.ResponseClassLegacyAccessor(
 
 numeric_accessor = models.base.ResponseClassLegacyAccessor(
     models.NumericResponse, 'numeric_response',
-    (lambda x: x.get('numericResponse')))
+    (lambda x: float(x.get('numericResponse'))))
 
 note_accessor = models.base.ResponseClassLegacyAccessor(
     models.NoteResponse, 'note_response',

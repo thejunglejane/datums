@@ -1,6 +1,6 @@
 from sqlalchemy import Column, ForeignKey
-from sqlalchemy import Integer, String, Boolean
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy import Boolean, Float, Integer, String
+from sqlalchemy.orm import backref, relationship
 from sqlalchemy.dialects import postgresql
 from sqlalchemy_utils import UUIDType
 
@@ -83,7 +83,7 @@ class NoteResponse(Response):
 
 class NumericResponse(Response):
 
-    numeric_response = Column(Integer)  # numericResponse
+    numeric_response = Column(Float)  # numericResponse
 
     __mapper_args__ = {
         'polymorphic_identity': 'numeric',
