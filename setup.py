@@ -10,10 +10,13 @@ def readme():
 setup(
     name = 'datums',
     packages = ['datums', 'datums.pipeline', 'datums.models'],
-    scripts = ['bin/datums'],
     version = __version__,
+    scripts = ['bin/datums'],
+    install_requires = ['sqlalchemy', 'sqlalchemy-utils', 'python-dateutil'],
     description = 'A PostgreSQL pipeline for Reporter.',
     author = 'Jane Stewart Adams',
     author_email = 'jane@thejunglejane.com',
-    install_requires = ['sqlalchemy', 'sqlalchemy-utils', 'python-dateutil']
+    license = 'MIT', 
+    url = 'https://github.com/thejunglejane/datums',
+    download_url = 'https://github.com/thejunglejane/datums/tarball/0.0.5'
 )
