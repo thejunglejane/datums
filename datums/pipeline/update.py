@@ -4,35 +4,31 @@ from datums import models
 import codec
 
 
+models = [models.Snapshot, models.AudioSnapshot, models.LocationSnapshot,
+          models.PlacemarkSnapshot, models.WeatherSnapshot]
+
+
+def update_snapshot(snapshot, model):
+    target = model.__name__.lower().strip('snapshot')
+    try:
+        ids = {'id': snapshot[target]['uniqueIdentifier']}
+    except KeyError:
+        if target == '':
+            ids = {'id': snapshot['uniqueIdentifier']}
+        elif target == 'placemark':
+            try:
+                ids = {'id': snapshot.get(
+                    'location')['placemark']['uniqueIdentifier']}
+            except KeyError:
+                pass
+    else:
+        model.update(snapshot, **ids)
+
+
 def update_question(question):
     ids = {'type': question['questionType'],
            'prompt': question['prompt']}
     models.Question.update(question, **ids)
-
-
-def update_snapshot(snapshot):
-    ids = {'id': snapshot['uniqueIdentifier']}
-    models.Snapshot.update(snapshot, **ids)
-
-
-def update_audio_snapshot(snapshot):
-    ids = {'id': snapshot['audio']['uniqueIdentifier']}
-    models.AudioSnapshot.update(snapshot, **ids)
-
-
-def update_location_snapshot(snapshot):
-    ids = {'id': snapshot['location']['uniqueIdentifier']}
-    models.LocationSnapshot.update(snapshot, **ids)
-
-
-def update_placemark_snapshot(snapshot):
-    ids = {'id': snapshot['location']['placemark']['uniqueIdentifier']}
-    models.PlacemarkSnapshot.update(snapshot, **ids)
-
-
-def update_weather_snapshot(snapshot):
-    ids = {'id': snapshot['weather']['uniqueIdentifier']}
-    models.WeatherSnapshot.update(snapshot, **ids)
 
 
 def update_response(response, snapshot):
@@ -42,11 +38,8 @@ def update_response(response, snapshot):
 
 def update_report(snapshot):
     # Update snapshots
-    update_snapshot(snapshot)
-    update_audio_snapshot(snapshot)
-    update_location_snapshot(snapshot)
-    update_placemark_snapshot(snapshot)
-    update_weather_snapshot(snapshot)
+    for model in models:
+        update_snapshot(snapshot, model)
     # Update response
     for response in snapshot['responses']:
         update_response(response, snapshot)
