@@ -18,5 +18,6 @@ setup(
     author_email = 'jane@thejunglejane.com',
     license = 'MIT', 
     url = 'https://github.com/thejunglejane/datums',
-    download_url = 'https://github.com/thejunglejane/datums/tarball/0.0.5'
+    download_url = 'https://github.com/thejunglejane/datums/tarball/{v}'.format(
+        v=__version__)
 )
