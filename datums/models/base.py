@@ -20,6 +20,11 @@ class GhostBase(Base):
 
     __abstract__ = True
 
+    def __repr__(self, attrs=None):
+        return '''<{obj.__name__}(
+            ', '.join(['='.join([attr, getattr(obj, attr)] for attr in attrs)])
+            )>'''.format(obj=self)
+
     @classmethod
     def get_or_create(cls, **kwargs):
         '''

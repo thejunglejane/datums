@@ -24,7 +24,10 @@ class Response(GhostBase):
     }
 
     def __repr__(self):
-        return '''<Response(type='%s'>''' % (self.type)
+        return '''<{self.__name__}(
+            id={self.id}, snapshot_id={self.snapshot_id},
+            question_id={self.question_id}, type={self.type}
+            )>'''.format(self)
 
 
 class BooleanResponse(Response):
@@ -34,10 +37,6 @@ class BooleanResponse(Response):
     __mapper_args__ = {
         'polymorphic_identity': 'boolean',
     }
-
-    def __repr__(self):
-        return '''<BooleanResponse(question_id='%s', response='%s')>''' % (
-            self.question_id, self.boolean_response)
 
 
 class LocationResponse(Response):
@@ -49,11 +48,6 @@ class LocationResponse(Response):
         'polymorphic_identity': 'location',
     }
 
-    def __repr__(self):
-        return '''<LocationResponse(question_id='%s', response='%s',
-            venue_id='%s')>''' % (
-            self.question_id, self.location_response, self.venue_id)
-
 
 class MultiResponse(Response):
 
@@ -62,10 +56,6 @@ class MultiResponse(Response):
     __mapper_args__ = {
         'polymorphic_identity': 'multi',
     }
-
-    def __repr__(self):
-        return '''<MultiResponse(question_id='%s', response='%s')>''' % (
-            self.question_id, self.multi_response)
 
 
 class NoteResponse(Response):
@@ -76,10 +66,6 @@ class NoteResponse(Response):
         'polymorphic_identity': 'note',
     }
 
-    def __repr__(self):
-        return '''<NoteResponse(question_id='%s', response='%s')>''' % (
-            self.question_id, self.note_response)
-
 
 class NumericResponse(Response):
 
@@ -88,10 +74,6 @@ class NumericResponse(Response):
     __mapper_args__ = {
         'polymorphic_identity': 'numeric',
     }
-
-    def __repr__(self):
-        return '''<NumericResponse(question_id='%s', response='%s')>''' % (
-            self.question_id, self.numeric_response)
 
 
 class PeopleResponse(Response):
@@ -102,10 +84,6 @@ class PeopleResponse(Response):
         'polymorphic_identity': 'people',
     }
 
-    def __repr__(self):
-        return '''<PeopleResponse(question_id='%s', response='%s')>''' % (
-            self.question_id, self.people_response)
-
 
 class TokenResponse(Response):
 
@@ -114,7 +92,3 @@ class TokenResponse(Response):
     __mapper_args__ = {
         'polymorphic_identity': 'tokens',
     }
-
-    def __repr__(self):
-        return '''<TokenResponse(question_id='%s', response='%s')>''' % (
-            self.question_id, self.tokens_response)
