@@ -32,10 +32,10 @@ class Snapshot(GhostBase):
     weather_snapshot = relationship(
         'WeatherSnapshot', backref=backref('snapshot'))
 
-    def __repr__(self):
+    def __str__(self):
         attrs = ['id', 'created_at', 'report_impetus', 'battery', 'steps',
             'section_identifier', 'background', 'connection', 'draft']
-        super(self.__name__).__repr__(attrs)
+        super(Snapshot, self).__str__(attrs)
 
 class AudioSnapshot(GhostBase):
 
@@ -47,9 +47,9 @@ class AudioSnapshot(GhostBase):
     average = Column(Numeric)  # avg
     peak = Column(Numeric)  # peak
 
-    def __repr__(self):
+    def __str__(self):
         attrs = ['id', 'snapshot_id', 'average', 'peak']
-        super(self.__name__).__repr__(attrs)
+        super(AudioSnapshot, self).__str__(attrs)
 
 
 class LocationSnapshot(GhostBase):
@@ -71,11 +71,11 @@ class LocationSnapshot(GhostBase):
     placemark = relationship(
         'PlacemarkSnapshot', backref=backref('location_snapshots', order_by=id))
 
-    def __repr__(self):
+    def __str__(self):
         attrs = ['id', 'snapshot_id', 'created_at', 'latitude',
             'longitudue', 'altitude', 'speed', 'course',
             'vertical_accuracy', 'horizontal_accuracy']
-        super(self.__name__).__repr__(attrs)
+        super(LocationSnapshot, self).__str__(attrs)
 
 
 class PlacemarkSnapshot(GhostBase):
@@ -96,11 +96,11 @@ class PlacemarkSnapshot(GhostBase):
     postal_code = Column(String)  # postalCode
     region = Column(String)  # region
 
-    def __repr__(self):
+    def __str__(self):
         attrs = ['id', 'location_snapshot_id', 'street_number', 
             'street_name', 'address', 'neighborhood', 'city', 'county', 
             'state', 'country', 'postal_code', 'region']
-        super(self.__name__).__repr__(attrs)
+        super(PlacemarkSnapshot, self).__str__(attrs)
 
 
 class WeatherSnapshot(GhostBase):
@@ -132,7 +132,7 @@ class WeatherSnapshot(GhostBase):
     visibility_km = Column(Numeric)  # visibilityKM
     uv = Column(Numeric)  # uv
 
-    def __repr__(self):
+    def __str__(self):
         attrs = ['id', 'snapshot_id', 'station_id', 'latitude', 
             'longitude', 'weather', 'temperature_fahrenheit',
             'temperature_celsius', 'feels_like_fahrenheit',
@@ -140,4 +140,4 @@ class WeatherSnapshot(GhostBase):
             'wind_mph', 'wind_kph', 'wind_gust_mph', 'wind_gust_kph',
             'relative_humidity', 'precipitation_in', 'precipitation_mm',
             'dewpoint_celsius', 'visibility_mi', 'visibility_km', 'uv']
-        super(self.__name__).__repr__(attrs)
+        super(WeatherSnapshot, self).__str__(attrs)

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from functools import wraps
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -21,10 +23,10 @@ class GhostBase(Base):
 
     __abstract__ = True
 
-    def __repr__(self, attrs=None):
-        return '''
-            <GhostBase(', '.join(['='.join([attr, getattr(obj, attr)] for attr in attrs)]))>
-            '''.format(obj=self)
+    def __str__(self, attrs):
+        return '''<{0}({1})>'''.format(self.__class__.__name__, ', '.join(
+            ['='.join([attr, str(getattr(self, attr, ''))]) for attr in attrs]))
+
     @classmethod
     def _get_instance(cls, **kwargs):
         '''Returns the first instance of cls with attributes matching **kwargs.
@@ -162,10 +164,12 @@ class LocationResponseClassLegacyAccessor(ResponseClassLegacyAccessor):
 
 
 def database_setup(engine):
-    # Set up the database
+    '''Set up the database.
+    '''
     metadata.create_all(engine)
 
 
 def database_teardown(engine):
-    # BURN IT TO THE GROUND
+    '''BURN IT ALL DOWN (╯°□°）╯︵ ┻━┻
+    '''
     metadata.drop_all(engine)

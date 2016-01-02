@@ -23,11 +23,9 @@ class Response(GhostBase):
         'polymorphic_on': type
     }
 
-    def __repr__(self):
-        return '''<{self.__name__}(
-            id={self.id}, snapshot_id={self.snapshot_id},
-            question_id={self.question_id}, type={self.type}
-            )>'''.format(self)
+    def __str__(self):
+        attrs = ['id', 'snapshot_id', 'question_id', 'type']
+        super(Response, self).__str__(attrs)
 
 
 class BooleanResponse(Response):
