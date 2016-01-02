@@ -65,11 +65,11 @@ def main():
             for snapshot in reports['snapshots']:
                 update.update_report(snapshot)
     if args.delete:
-        files = glob.glob(os.path.expanduser(args.update))
+        files = glob.glob(os.path.expanduser(args.delete))
         for file in files:
             with open(file, 'r') as f:
                 reports = json.load(f)
-            for snapshot in file['snapshots']:
+            for snapshot in reports['snapshots']:
                 delete.delete_report(snapshot)
 
 

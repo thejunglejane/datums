@@ -26,9 +26,9 @@ def update_snapshot(snapshot, model):
 
 
 def update_question(question):
-    ids = {'type': question['questionType'],
-           'prompt': question['prompt']}
-    models.Question.update(question, **ids)
+    question_dict = {'type': question['questionType'],
+                     'prompt': question['prompt']}
+    models.Question.update(question, **question_dict)
 
 
 def update_response(response, snapshot):
