@@ -21,9 +21,9 @@ class GhostBase(Base):
     __abstract__ = True
 
     def __repr__(self, attrs=None):
-        return '''<{obj.__name__}(
-            ', '.join(['='.join([attr, getattr(obj, attr)] for attr in attrs)])
-            )>'''.format(obj=self)
+        return '''
+            <GhostBase(', '.join(['='.join([attr, getattr(obj, attr)] for attr in attrs)]))>
+            '''.format(obj=self)
 
     @classmethod
     def get_or_create(cls, **kwargs):
@@ -49,7 +49,7 @@ class GhostBase(Base):
         q = session.query(cls).filter_by(**kwargs).first()
         if q:
             for k in snapshot:
-                q.__dict__.update(k=snapshot[k])
+                setattr(q, k, snapshot[k])
             session.add(q)
             session.commit()
         else:
