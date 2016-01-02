@@ -107,7 +107,8 @@ class ResponseClassLegacyAccessor(object):
 
 class LocationResponseClassLegacyAccessor(ResponseClassLegacyAccessor):
 
-    def __init__(self, response_class, column, accessor, venue_column, venue_accessor):
+    def __init__(
+        self, response_class, column, accessor, venue_column, venue_accessor):
         super(LocationResponseClassLegacyAccessor, self).__init__(
             response_class, column, accessor)
         self.venue_column = venue_column
