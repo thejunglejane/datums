@@ -18,5 +18,6 @@ class Question(GhostBase):
     responses = relationship('Response', cascade='save-update, merge, delete')
 
     def __repr__(self):
-        return '''<Question(type='%s', prompt='%s')>''' % (self.type,
-                                                           self.prompt)
+        return '''<Question(
+            id={self.id}, type={self.type}, prompt={self.prompt}
+            )>'''.format(self)
