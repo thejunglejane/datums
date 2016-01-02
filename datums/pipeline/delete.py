@@ -4,35 +4,31 @@ from datums import models
 import codec
 
 
+models = [models.Snapshot, models.AudioSnapshot, models.LocationSnapshot,
+          models.PlacemarkSnapshot, models.WeatherSnapshot]
+
+
+def delete_snapshot(snapshot, model):
+    target = model.__name__.lower().strip('snapshot')
+    try:
+        ids = {'id': snapshot[target]['uniqueIdentifier']}
+    except KeyError:
+        if target == '':
+            ids = {'id': snapshot['uniqueIdentifier']}
+        elif target == 'placemark':
+            try:
+                ids = {'id': snapshot.get(
+                    'location')['placemark']['uniqueIdentifier']}
+            except KeyError:
+                pass
+    else:
+        model.delete(**ids)
+
+
 def delete_question(question):
     question_dict = {'type': question['questionType'],
                      'prompt': question['prompt']}
     models.Question.delete(**question_dict)
-
-
-def delete_snapshot(snapshot):
-    ids = {'id': snapshot['uniqueIdentifier']}
-    models.Snapshot.delete(**ids)
-
-
-def delete_audio_snapshot(snapshot):
-    ids = {'id': snapshot['audio']['uniqueIdentifier']}
-    models.AudioSnapshot.delete(**ids)
-
-
-def delete_location_snapshot(snapshot):
-    ids = {'id': snapshot['location']['uniqueIdentifier']}
-    models.LocationSnapshot.delete(**ids)
-
-
-def delete_placemark_snapshot(snapshot):
-    ids = {'id': snapshot['location']['placemark']['uniqueIdentifier']}
-    models.PlacemarkSnapshot.delete(**ids)
-
-
-def delete_weather_snapshot(snapshot):
-    ids = {'id': snapshot['weather']['uniqueIdentifier']}
-    models.WeatherSnapshot.delete(**ids)
 
 
 def delete_response(response, snapshot):
@@ -42,11 +38,8 @@ def delete_response(response, snapshot):
 
 def delete_report(snapshot):
     # Delete snapshots
-    delete_snapshot(snapshot)
-    delete_audio_snapshot(snapshot)
-    delete_location_snapshot(snapshot)
-    delete_placemark_snapshot(snapshot)
-    delete_weather_snapshot(snapshot)
+    for model in models:
+        delete_snapshot(snapshot, model)
     # Delete responses
     for response in snapshot['responses']:
         delete_response(response, snapshot)
