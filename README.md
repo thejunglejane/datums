@@ -1,4 +1,6 @@
 ![datums_header](images/header.png)
+
+[![Code Climate](https://codeclimate.com/github/thejunglejane/datums/badges/gpa.svg)](https://codeclimate.com/github/thejunglejane/datums)
  
 Datums is a PostgreSQL pipeline for [Reporter](http://www.reporter-app.com/). Datums will insert records from the Dropbox folder that contains your exported Reporter data<sup>[1](#notes)</sup> into PostgreSQL.
 
@@ -23,7 +25,7 @@ $ pip install datums
 
 datums relies on one environment variable, `DATABASE_URI`. I recommend creating a virtual environment in which this variable is stored, but you can also add it to your .bash_profile (or equivalent) to make it available in all sessions and environments.
 
-Run the following command inside a virtual environment to make `DATABASE_URI` accessible whenever the environment is active, or outside of a virtual environment to make `DATABASE_URI` accessible only in your current Terminal session. To make `DATABASE_URI` available in all Terminal sessions and environments, add the line to your .bash_profile
+Run the following command inside a virtual environment to make `DATABASE_URI` accessible whenever the environment is active, or outside of a virtual environment to make `DATABASE_URI` accessible only in your current Terminal session. To make `DATABASE_URI` available in all Terminal sessions and environments, add the following line to your .bash_profile (or equivalent)
 ```bash
 export DATABASE_URI=postgresql://<your postgres user here>@localhost:5432/datums
 ```
@@ -36,15 +38,9 @@ $ git clone https://github.com/thejunglejane/datums.git
 $ cd datums
 $ python setup.py install
 ```
-Rename the .env-example file in the repository's root to .env and fill in the database URI information. You'll need to source the .env after filling in your information.
-```bash
-export DATABASE_URI=postgresql://<your postgres user here>@localhost:5432/datums
-```
-```
-$ source .env
-```
+You can rename the .env-example file in the repository's root to .env and fill in the `DATABASE_URI` variable information. You'll need to source the .env after filling in your information for the variable to be accessible in your session.
 
-Note that the `DATABASE_URI` variable will only be available in your current Terminal session. If you would like to be able to use datums without sourcing the .env everytime, I recommend creating a virtual environment in which this variable is stored, or adding the variable to your .bash_profile (or equivalent).
+Note that the `DATABASE_URI` variable will only be available in your current Terminal session. If you would like to be able to use datums without sourcing the .env everytime, I recommend creating a virtual environment in which this variable is stored or adding the variable to your .bash_profile (or equivalent).
 
 ### Setup the Database
 
