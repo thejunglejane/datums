@@ -1,3 +1,4 @@
+from functools import wraps
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import create_engine
@@ -24,6 +25,28 @@ class GhostBase(Base):
         return '''
             <GhostBase(', '.join(['='.join([attr, getattr(obj, attr)] for attr in attrs)]))>
             '''.format(obj=self)
+    @classmethod
+    def _get_instance(cls, **kwargs):
+        '''Returns the first instance of cls with attributes matching **kwargs.
+        '''
+        return session.query(cls).filter_by(**kwargs).first()
+
+    @staticmethod
+    def _validate_and_commit(obj, action, **kwargs):
+        '''Adds/deletes the instance obj to/from the session based on the
+        action. Validates the values of the attributes in **kwargs against the
+        attributes of the instance. If all values are validated, the session
+        will commit, otherwise it will rollback.
+        '''
+        action(obj)
+        try:
+            for key, value in kwargs.iteritems():
+                assert getattr(obj, key) == value
+        except AssertionError:
+            session.rollback()
+            raise AssertionError
+        else:
+            session.commit()
 
     @classmethod
     def get_or_create(cls, **kwargs):
@@ -31,12 +54,11 @@ class GhostBase(Base):
         If a record matching the instance already exists in the database, then
         return it, otherwise create a new record.
         '''
-        q = session.query(cls).filter_by(**kwargs).first()
+        q = cls._get_instance(**kwargs)
         if q:
             return q
         q = cls(**kwargs)
-        session.add(q)
-        session.commit()
+        cls._validate_and_commit(q, session.add, **kwargs)
         return q
 
     @classmethod
@@ -46,12 +68,11 @@ class GhostBase(Base):
         update it. If a record matching the instance id does not already exist,
         create a new record.
         '''
-        q = session.query(cls).filter_by(**kwargs).first()
+        q = cls._get_instance(**kwargs)
         if q:
             for k in snapshot:
                 setattr(q, k, snapshot[k])
-            session.add(q)
-            session.commit()
+            cls._validate_and_commit(q, session.add, **snapshot)
         else:
             cls.get_or_create(**kwargs)
 
@@ -60,10 +81,9 @@ class GhostBase(Base):
         '''
         If a record matching the instance id exists in the database, delete it.
         '''
-        q = session.query(cls).filter_by(**kwargs).first()
+        q = cls._get_instance(**kwargs)
         if q:
-            session.delete(q)
-            session.commit()
+            cls._validate_and_commit(q, session.delete, **kwargs)
 
 
 class ResponseClassLegacyAccessor(object):
@@ -80,8 +100,7 @@ class ResponseClassLegacyAccessor(object):
         # If the record does not have a response, add it
         if not getattr(response_cls, self.column):
             setattr(response_cls, self.column, self.accessor(response))
-            session.add(response_cls)
-            session.commit()
+            cls._validate_and_commit(response_cls, session.add, **kwargs)
 
     def update(self, response, **kwargs):
         response_cls = self.response_class(**kwargs)
@@ -90,8 +109,7 @@ class ResponseClassLegacyAccessor(object):
             response_cls.__class__).filter_by(**kwargs).first()
         if response_cls:
             setattr(response_cls, self.column, self.accessor(response))
-            session.add(response_cls)
-            session.commit()
+            cls._validate_and_commit(response_cls, session.add, **kwargs)
         else:
             response_cls.get_or_create_from_legacy_response(response, **kwargs)
 
@@ -101,14 +119,13 @@ class ResponseClassLegacyAccessor(object):
         response_cls = session.query(
             response_cls.__class__).filter_by(**kwargs).first()
         if response_cls:
-            session.delete(response_cls)
-            session.commit()
+            cls._validate_and_commit(response_cls, session.delete, **kwargs)
 
 
 class LocationResponseClassLegacyAccessor(ResponseClassLegacyAccessor):
 
     def __init__(
-        self, response_class, column, accessor, venue_column, venue_accessor):
+            self, response_class, column, accessor, venue_column, venue_accessor):
         super(LocationResponseClassLegacyAccessor, self).__init__(
             response_class, column, accessor)
         self.venue_column = venue_column
@@ -126,9 +143,9 @@ class LocationResponseClassLegacyAccessor(ResponseClassLegacyAccessor):
         if not getattr(response_cls, self.venue_column):
             setattr(
                 response_cls, self.venue_column, self.venue_accessor(response))
-
-        session.add(response_cls)
-        session.commit()
+        kwargs.update({self.column: self.accessor(response),
+                       self.venue_column: self.venue_accessor(response)})
+        cls._validate_and_commit(response_cls, session.add, **kwargs)
 
     def update(self, response, **kwargs):
         response_cls = self.response_class(**kwargs)
@@ -139,8 +156,9 @@ class LocationResponseClassLegacyAccessor(ResponseClassLegacyAccessor):
             setattr(response_cls, self.column, self.accessor(response))
             setattr(
                 response_cls, self.venue_column, self.venue_accessor(response))
-            session.add(response_cls)
-            session.commit()
+            kwargs.update({self.column: self.accessor(response),
+                           self.venue_column: self.venue_accessor(response)})
+            cls._validate_and_commit(response_cls, session.add, **kwargs)
 
 
 def database_setup(engine):

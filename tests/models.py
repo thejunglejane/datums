@@ -1,14 +1,9 @@
+# -*- coding: utf-8 -*-
+
 from datums import models
-from functools import wraps
 from sqlalchemy.orm import query
 import mock
 import unittest
-
-
-# TODO (jsa): wrap assertions that are common to all test methods
-# self.assertTrue(mock_query_first.called)
-# self.assertTrue(mock_query_filter_by.called)
-# self.assertTrue(mock_session_query.called)
 
 
 @mock.patch.object(query.Query, 'first')
@@ -24,6 +19,66 @@ class TestGhostBase(unittest.TestCase):
     def tearDown(self):
         del self.GhostBaseInstance
 
+    def test_get_instance_exists(
+            self, mock_session_query, mock_query_filter_by, mock_query_first):
+        '''Does the _get_instance() method return an existing instance of the
+        class?
+        '''
+        mock_query_first.return_value = models.base.GhostBase()
+        self.assertIsInstance(
+            self.GhostBaseInstance._get_instance(
+                **{'foo': 'bar'}), self.GhostBaseInstance.__class__)
+        mock_session_query.assert_called_once_with(models.base.GhostBase)
+        mock_query_filter_by.assert_called_once_with(**{'foo': 'bar'})
+        self.assertTrue(mock_query_first.called)
+
+    def test_get_instance_does_not_exist(
+            self, mock_session_query, mock_query_filter_by, mock_query_first):
+        '''Does the _get_instance() method return None if no instance of the 
+        class exists?
+        '''
+        mock_query_first.return_value = None
+        self.assertIsNone(
+            self.GhostBaseInstance._get_instance(**{'foo': 'bar'}))
+        mock_session_query.assert_called_once_with(models.base.GhostBase)
+        mock_query_filter_by.assert_called_once_with(**{'foo': 'bar'})
+        self.assertTrue(mock_query_first.called)
+
+    @mock.patch.object(models.session, 'commit')
+    @mock.patch.object(models.session, 'add')
+    def test_validate_and_commit_valid_kwargs(
+            self, mock_session_add, mock_session_commit, 
+            mock_session_query, mock_query_filter_by, mock_query_first):
+        '''Does the _validate_and_commit() method commit the session if the
+        **kwargs are valid?
+        '''
+        kwargs = {'foo': 'bar'}
+        obj = models.Snapshot(**kwargs)
+        setattr(self.GhostBaseInstance, 'foo', 'bar')
+        self.GhostBaseInstance._validate_and_commit(
+            obj, mock_session_add, **kwargs)
+        mock_session_add.assert_called_once_with(obj)
+        self.assertTrue(mock_session_commit.called)
+        delattr(self.GhostBaseInstance, 'foo')
+
+    @mock.patch.object(models.session, 'rollback')
+    @mock.patch.object(models.session, 'add')
+    def test_validate_and_commit_invalid_kwargs(
+            self, mock_session_add, mock_session_rollback, 
+            mock_session_query, mock_query_filter_by, mock_query_first):
+        '''Does the _validate_and_commit() method rollback the session if the
+        **kwargs are invalid and raise an AssertionError?
+        '''
+        kwargs = {'foo': 'bar'}
+        obj = models.Snapshot(**{'foo': 'baz'})
+        setattr(self.GhostBaseInstance, 'foo', 'bar')
+        with self.assertRaises(AssertionError):
+            self.GhostBaseInstance._validate_and_commit(
+                obj, mock_session_add, **kwargs)
+        mock_session_add.assert_called_once_with(obj)
+        self.assertTrue(mock_session_rollback.called)
+        delattr(self.GhostBaseInstance, 'foo')
+
     @mock.patch.object(models.session, 'add')
     def test_get_or_create_get(self, mock_session_add, mock_session_query,
                                mock_query_filter_by, mock_query_first):
@@ -32,9 +87,6 @@ class TestGhostBase(unittest.TestCase):
         '''
         mock_query_first.return_value = True
         self.assertTrue(self.GhostBaseInstance.get_or_create())
-        self.assertTrue(mock_query_first.called)
-        self.assertTrue(mock_query_filter_by.called)
-        self.assertTrue(mock_session_query.called)
         mock_session_add.assert_not_called()
 
     @mock.patch.object(models.session, 'add')
@@ -46,9 +98,6 @@ class TestGhostBase(unittest.TestCase):
         mock_query_first.return_value = None
         self.assertIsInstance(
             self.GhostBaseInstance.get_or_create(), models.base.GhostBase)
-        self.assertTrue(mock_query_first.called)
-        self.assertTrue(mock_query_filter_by.called)
-        self.assertTrue(mock_session_query.called)
         self.assertTrue(mock_session_add.called)
 
     @mock.patch.object(models.session, 'add')
@@ -59,9 +108,6 @@ class TestGhostBase(unittest.TestCase):
         '''
         mock_query_first.return_value = models.Snapshot
         self.GhostBaseInstance.update(snapshot={'foo': 'bar'})
-        self.assertTrue(mock_query_first.called)
-        self.assertTrue(mock_query_filter_by.called)
-        self.assertTrue(mock_session_query.called)
         self.assertTrue(mock_session_add.called)
 
     @mock.patch.object(models.session, 'add')
@@ -72,9 +118,6 @@ class TestGhostBase(unittest.TestCase):
         '''
         mock_query_first.return_value = None
         self.GhostBaseInstance.update(snapshot={'foo': 'bar'})
-        self.assertTrue(mock_query_first.called)
-        self.assertTrue(mock_query_filter_by.called)
-        self.assertTrue(mock_session_query.called)
         self.assertTrue(mock_session_add.called)
 
     @mock.patch.object(models.session, 'delete')
@@ -85,21 +128,15 @@ class TestGhostBase(unittest.TestCase):
         '''
         mock_query_first.return_value = True
         self.GhostBaseInstance.delete()
-        self.assertTrue(mock_query_first.called)
-        self.assertTrue(mock_query_filter_by.called)
-        self.assertTrue(mock_session_query.called)
         self.assertTrue(mock_session_delete.called)
 
     @mock.patch.object(models.session, 'delete')
-    def test_delete_does_not_exist(self, mock_session_delete,
-                                   mock_session_query, mock_query_filter_by,
-                                   mock_query_first):
+    def test_delete_does_not_exist(
+            self, mock_session_delete, mock_session_query,
+            mock_query_filter_by, mock_query_first):
         '''Does the delete() method do nothing if the instance does not already
         exists?
         '''
         mock_query_first.return_value = None
         self.GhostBaseInstance.delete()
-        self.assertTrue(mock_query_first.called)
-        self.assertTrue(mock_query_filter_by.called)
-        self.assertTrue(mock_session_query.called)
         mock_session_delete.assert_not_called()
