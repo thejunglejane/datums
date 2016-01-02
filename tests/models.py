@@ -47,7 +47,7 @@ class TestGhostBase(unittest.TestCase):
     @mock.patch.object(models.session, 'commit')
     @mock.patch.object(models.session, 'add')
     def test_validate_and_commit_valid_kwargs(
-            self, mock_session_add, mock_session_commit, 
+            self, mock_session_add, mock_session_commit,
             mock_session_query, mock_query_filter_by, mock_query_first):
         '''Does the _validate_and_commit() method commit the session if the
         **kwargs are valid?
@@ -64,7 +64,7 @@ class TestGhostBase(unittest.TestCase):
     @mock.patch.object(models.session, 'rollback')
     @mock.patch.object(models.session, 'add')
     def test_validate_and_commit_invalid_kwargs(
-            self, mock_session_add, mock_session_rollback, 
+            self, mock_session_add, mock_session_rollback,
             mock_session_query, mock_query_filter_by, mock_query_first):
         '''Does the _validate_and_commit() method rollback the session if the
         **kwargs are invalid and raise an AssertionError?
@@ -140,3 +140,14 @@ class TestGhostBase(unittest.TestCase):
         mock_query_first.return_value = None
         self.GhostBaseInstance.delete()
         mock_session_delete.assert_not_called()
+class TestModelsBase(unittest.TestCase):
+
+    @mock.patch.object(models.base.metadata, 'create_all')
+    def test_database_setup(self, mock_create_all):
+        models.base.database_setup(models.engine)
+        mock_create_all.assert_called_once_with(models.engine)
+
+    @mock.patch.object(models.base.metadata, 'drop_all')
+    def test_database_teardown(self, mock_drop_all):
+        models.base.database_teardown(models.engine)
+        mock_drop_all.assert_called_once_with(models.engine)
