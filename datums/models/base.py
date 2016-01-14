@@ -29,19 +29,10 @@ def database_teardown(engine):
     metadata.drop_all(engine)
 
 
-def _validate_and_commit(obj, action, **kwargs):
+def _action_and_commit(obj, action):
     '''Adds/deletes the instance obj to/from the session based on the action.
-    Validates the values of the attributes in **kwargs against the attributes
-    of the instance. If all values are validated, the session will commit,
-    otherwise it will rollback.
     '''
     action(obj)
-    try:
-        for key, value in kwargs.iteritems():
-            assert getattr(obj, key) == value
-    except (AttributeError, AssertionError), e:
-        session.rollback()
-        raise e
     session.commit()
 
 
@@ -71,7 +62,7 @@ class GhostBase(Base):
         if q:
             return q
         q = cls(**kwargs)
-        _validate_and_commit(q, session.add, **kwargs)
+        _action_and_commit(q, session.add)
         return q
 
     @classmethod
@@ -85,7 +76,7 @@ class GhostBase(Base):
         if q:
             for k in snapshot:
                 setattr(q, k, snapshot[k])
-            _validate_and_commit(q, session.add, **snapshot)
+            _action_and_commit(q, session.add)
         else:
             cls.get_or_create(**kwargs)
 
@@ -96,9 +87,12 @@ class GhostBase(Base):
         '''
         q = cls._get_instance(**kwargs)
         if q:
-            _validate_and_commit(q, session.delete, **kwargs)
+            _action_and_commit(q, session.delete)
 
 
+# TODO (jsa): fix responses not being added
+# The problem appears to be generated in get_or_create_from_legacy_response
+# or _action_and_commit (an AttributeError is raised).
 class ResponseClassLegacyAccessor(object):
 
     def __init__(self, response_class, column, accessor):
@@ -106,46 +100,29 @@ class ResponseClassLegacyAccessor(object):
         self.column = column
         self.accessor = accessor
 
-    @staticmethod
-    def _confirm_or_add_response(self, obj, attr, response, action, **kwargs):
-        try:
-            getattr(obj, attr)
-        except AttributeError:
-            setattr(obj, attr, self.accessor(response))
-            self._update_validate_and_commit(
-                obj, attr, response, action, **kwargs)
-
-    def _update_validate_and_commit(
-            self, obj, attr, response, action, **kwargs):
-        '''Update the **kwargs argument before validating and committing/rolling
-        back the result.
+    def _get_instance(self, **kwargs):
+        '''Return the first existing instance of the response record.
         '''
-        kwargs.update({attr: self.accessor(response)})
-        _validate_and_commit(obj, action, **kwargs)
+        return session.query(self.response_class).filter_by(**kwargs).first()
 
     def get_or_create_from_legacy_response(self, response, **kwargs):
         response_cls = self.response_class(**kwargs).get_or_create(**kwargs)
-        self._confirm_or_add_response(
-            response_cls, self.column, response, session.add, **kwargs)
+        if not getattr(response_cls, self.column):
+            setattr(response_cls, self.column, self.accessor(response))
+            _action_and_commit(response_cls, session.add)
 
     def update(self, response, **kwargs):
-        response_cls = self.response_class(**kwargs)
-        # Return the existing response record
-        response_cls = session.query(
-            response_cls.__class__).filter_by(**kwargs).first()
+        response_cls = self._get_instance(**kwargs)
         if response_cls:
-            self._confirm_or_add_response(
-                response_cls, self.column, response, session.add, **kwargs)
+            setattr(response_cls, self.column, self.accessor(response))
+            _action_and_commit(response_cls, session.add)
         else:
-            response_cls.get_or_create_from_legacy_response(response, **kwargs)
+            self.get_or_create_from_legacy_response(response, **kwargs)
 
     def delete(self, response, **kwargs):
-        response_cls = self.response_class(**kwargs)
-        # Return the existing response record
-        response_cls = session.query(
-            response_cls.__class__).filter_by(**kwargs).first()
+        response_cls = self._get_instance(**kwargs)
         if response_cls:
-            _validate_and_commit(response_cls, session.delete, **kwargs)
+            _action_and_commit(response_cls, session.delete)
 
 
 class LocationResponseClassLegacyAccessor(ResponseClassLegacyAccessor):
@@ -158,32 +135,20 @@ class LocationResponseClassLegacyAccessor(ResponseClassLegacyAccessor):
         self.venue_column = venue_column
         self.venue_accessor = venue_accessor
 
-    def get_or_create_from_legacy_response(self, response, **kwargs):
+    def get_or_create_from_legacy_response(self, response):
         response_cls = self.response_class(**kwargs).get_or_create(**kwargs)
-        # If the record does not have responses, add them
-        try:
-            getattr(response_cls, self.column)
-        except AttributeError:
+        if not getattr(response_cls, self.column):
             setattr(response_cls, self.column, self.accessor(response))
-            kwargs.update({self.column: self.accessor(response)})
-            self._validate_and_commit(response_cls, session.add, **kwargs)
-        try:
-            getattr(response_cls, self.venue_column)
-        except AttributeError:
+        if not getattr(response_cls, self.venue_column):
             setattr(
                 response_cls, self.venue_column, self.venue_accessor(response))
-            kwargs.update({self.venue_column: self.venue_accessor(response)})
-            self._validate_and_commit(response_cls, session.add, **kwargs)
+        _action_and_commit(response_cls, session.add)
 
     def update(self, response, **kwargs):
-        response_cls = self.response_class(**kwargs)
-        # Return the existing response record
-        response_cls = session.query(
-            response_cls.__class__).filter_by(**kwargs).first()
+        response_cls = super(
+            LocationResponseClassLegacyAccessor, self)._get_instance(**kwargs)
         if response_cls:
             setattr(response_cls, self.column, self.accessor(response))
             setattr(
                 response_cls, self.venue_column, self.venue_accessor(response))
-            kwargs.update({self.column: self.accessor(response),
-                           self.venue_column: self.venue_accessor(response)})
-            self._validate_and_commit(response_cls, session.add, **kwargs)
+            _action_and_commit(response_class, session.add)
