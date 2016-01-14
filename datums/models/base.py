@@ -143,7 +143,7 @@ class LocationResponseClassLegacyAccessor(ResponseClassLegacyAccessor):
         self.venue_column = venue_column
         self.venue_accessor = venue_accessor
 
-    def get_or_create_from_legacy_response(self, response):
+    def get_or_create_from_legacy_response(self, response, **kwargs):
         '''
         If a record matching the instance already does not already exist in the
         database, then create a new record.
