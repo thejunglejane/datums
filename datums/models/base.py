@@ -90,9 +90,6 @@ class GhostBase(Base):
             _action_and_commit(q, session.delete)
 
 
-# TODO (jsa): fix responses not being added
-# The problem appears to be generated in get_or_create_from_legacy_response
-# or _action_and_commit (an AttributeError is raised).
 class ResponseClassLegacyAccessor(object):
 
     def __init__(self, response_class, column, accessor):
@@ -106,12 +103,20 @@ class ResponseClassLegacyAccessor(object):
         return session.query(self.response_class).filter_by(**kwargs).first()
 
     def get_or_create_from_legacy_response(self, response, **kwargs):
+        '''
+        If a record matching the instance already does not already exist in the
+        database, then create a new record.
+        '''
         response_cls = self.response_class(**kwargs).get_or_create(**kwargs)
         if not getattr(response_cls, self.column):
             setattr(response_cls, self.column, self.accessor(response))
             _action_and_commit(response_cls, session.add)
 
     def update(self, response, **kwargs):
+        '''
+        If a record matching the instance already exists in the database, update
+        it, else create a new record.
+        '''
         response_cls = self._get_instance(**kwargs)
         if response_cls:
             setattr(response_cls, self.column, self.accessor(response))
@@ -120,6 +125,9 @@ class ResponseClassLegacyAccessor(object):
             self.get_or_create_from_legacy_response(response, **kwargs)
 
     def delete(self, response, **kwargs):
+        '''
+        If a record matching the instance id exists in the database, delete it.
+        '''
         response_cls = self._get_instance(**kwargs)
         if response_cls:
             _action_and_commit(response_cls, session.delete)
@@ -136,15 +144,24 @@ class LocationResponseClassLegacyAccessor(ResponseClassLegacyAccessor):
         self.venue_accessor = venue_accessor
 
     def get_or_create_from_legacy_response(self, response):
+        '''
+        If a record matching the instance already does not already exist in the
+        database, then create a new record.
+        '''
         response_cls = self.response_class(**kwargs).get_or_create(**kwargs)
         if not getattr(response_cls, self.column):
             setattr(response_cls, self.column, self.accessor(response))
+            _action_and_commit(response_cls, session.add)
         if not getattr(response_cls, self.venue_column):
             setattr(
                 response_cls, self.venue_column, self.venue_accessor(response))
-        _action_and_commit(response_cls, session.add)
+            _action_and_commit(response_cls, session.add)
 
     def update(self, response, **kwargs):
+        '''
+        If a record matching the instance already exists in the database, update
+        both the column and venue column attributes, else create a new record.
+        '''
         response_cls = super(
             LocationResponseClassLegacyAccessor, self)._get_instance(**kwargs)
         if response_cls:
