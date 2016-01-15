@@ -1,1 +1,1 @@
-__all__ = ['models', 'pipeline']
+__all__ = ['test_models', 'test_pipeline']

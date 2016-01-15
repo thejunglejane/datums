@@ -6,6 +6,13 @@ from datums import models
 import codec
 
 
+def _add_if_internet_wrapper(**kwargs):
+    '''If a report is made without an internet connection, some data won't be
+    captured in the snapshot: location, placemark, and weather. This wrapper
+    will only execute the add function if the sub-snapshot is present.
+    '''
+    pass
+
 def add_question(question):
     question_dict = {'type': question['questionType'],
                      'prompt': question['prompt']}
@@ -35,9 +42,13 @@ def add_audio_snapshot(snapshot):
     models.AudioSnapshot.get_or_create(**audio_snapshot_dict)
 
 
+# @_add_if_internet_wrapper(**{'sub_snapshot': 'location'})
 def add_location_snapshot(snapshot):
-    location_snapshot = snapshot.get('location')
-    if location_snapshot is not None:
+    try:
+        location_snapshot = snapshot['location']
+    except KeyError:
+        pass
+    else:
         location_snapshot_dict = {
             'id': uuid.UUID(location_snapshot['uniqueIdentifier']),
             'snapshot_id': uuid.UUID(snapshot['uniqueIdentifier']),
@@ -50,36 +61,44 @@ def add_location_snapshot(snapshot):
             'vertical_accuracy': location_snapshot.get('verticalAccuracy'),
             'horizontal_accuracy': location_snapshot.get('horizontalAccuracy')}
         models.LocationSnapshot.get_or_create(**location_snapshot_dict)
+        add_placemark_snapshot(location_snapshot)
 
 
-def add_placemark_snapshot(snapshot):
-    location_snapshot = snapshot.get('location')
-    if location_snapshot is not None:
-        placemark_snapshot = location_snapshot.get('placemark')
-        if placemark_snapshot is not None:
-            placemark_snapshot_dict = {
-                'id': uuid.UUID(placemark_snapshot.get('uniqueIdentifier')),
-                'location_snapshot_id': uuid.UUID(
-                    snapshot['location']['uniqueIdentifier']),
-                'street_number': placemark_snapshot.get('subThoroughfare'),
-                'street_name': placemark_snapshot.get('thoroughfare'),
-                'address': placemark_snapshot.get('name'),
-                'neighborhood': placemark_snapshot.get('subLocality'),
-                'city': placemark_snapshot.get('locality'),
-                'county': placemark_snapshot.get('subAdministrativeArea'),
-                'state': placemark_snapshot.get('administrativeArea'),
-                'country': placemark_snapshot.get('country'),
-                'postal_code': placemark_snapshot.get('postalCode'),
-                'region': placemark_snapshot.get('region')}
-            models.PlacemarkSnapshot.get_or_create(**placemark_snapshot_dict)
+# @_add_if_internet_wrapper(
+#     **{'sub_snapshot': 'location', 'sub_sub_snapshot': 'placemark'})
+def add_placemark_snapshot(location_snapshot):
+    try:
+        placemark_snapshot = location_snapshot['placemark']
+    except KeyError:
+        pass
+    else:
+        placemark_snapshot_dict = {
+            'id': uuid.UUID(placemark_snapshot.get('uniqueIdentifier')),
+            'location_snapshot_id': uuid.UUID(
+                location_snapshot['uniqueIdentifier']),
+            'street_number': placemark_snapshot.get('subThoroughfare'),
+            'street_name': placemark_snapshot.get('thoroughfare'),
+            'address': placemark_snapshot.get('name'),
+            'neighborhood': placemark_snapshot.get('subLocality'),
+            'city': placemark_snapshot.get('locality'),
+            'county': placemark_snapshot.get('subAdministrativeArea'),
+            'state': placemark_snapshot.get('administrativeArea'),
+            'country': placemark_snapshot.get('country'),
+            'postal_code': placemark_snapshot.get('postalCode'),
+            'region': placemark_snapshot.get('region')}
+        models.PlacemarkSnapshot.get_or_create(**placemark_snapshot_dict)
 
 
+# @_add_if_internet_wrapper(**{'sub_snapshot': 'weather'})
 def add_weather_snapshot(snapshot):
-    weather_snapshot = snapshot.get('weather')
-    if weather_snapshot is not None:
+    try:
+        weather_snapshot = snapshot['weather']
+    except KeyError:
+        pass
+    else:
         weather_snapshot_dict = {
-            'id': weather_snapshot['uniqueIdentifier'],
-            'snapshot_id': snapshot['uniqueIdentifier'],
+            'id': uuid.UUID(weather_snapshot['uniqueIdentifier']),
+            'snapshot_id': uuid.UUID(snapshot['uniqueIdentifier']),
             'station_id': weather_snapshot.get('stationID'),
             'latitude': weather_snapshot.get('latitude'),
             'longitude': weather_snapshot.get('longitude'),
@@ -114,7 +133,6 @@ def add_report(snapshot):
     add_snapshot(snapshot)
     add_audio_snapshot(snapshot)
     add_location_snapshot(snapshot)
-    add_placemark_snapshot(snapshot)
     add_weather_snapshot(snapshot)
     # Add responses
     for response in snapshot['responses']:
