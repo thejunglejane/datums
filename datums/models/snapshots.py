@@ -5,8 +5,8 @@ from sqlalchemy_utils import UUIDType
 
 from base import GhostBase
 
-__all__ = ['Snapshot', 'AudioSnapshot', 'LocationSnapshot',
-           'PlacemarkSnapshot', 'WeatherSnapshot']
+__all__ = ['Snapshot', 'AltitudeSnapshot', 'AudioSnapshot',
+           'LocationSnapshot', 'PlacemarkSnapshot', 'WeatherSnapshot']
 
 
 class Snapshot(GhostBase):
@@ -44,14 +44,13 @@ class AltitudeSnapshot(GhostBase):
     __tablename__ = 'altitude_snapshots'
 
     id = Column(UUIDType, primary_key=True)
-        'snapshots.id'
     floors_ascended = Column(Numeric)
     floors_descended = Column(Numeric)
     gps_altitude_from_location = Column(Numeric)
     gps_altitude_raw = Column(Numeric)
     pressure = Column(Numeric)
     pressure_adjusted = Column(Numeric)
-    snapshot_id = Column(UUIDType, ForeignKey(
+    snapshot_id = Column(UUIDType, ForeignKey('snapshots.id'), nullable=False)
 
     def __str__(self):
         attrs = ['id', 'snapshot_id', 'average', 'peak']
@@ -63,10 +62,9 @@ class AudioSnapshot(GhostBase):
     __tablename__ = 'audio_snapshots'
 
     id = Column(UUIDType, primary_key=True)
-        'snapshots.id'
     average = Column(Numeric)
     peak = Column(Numeric)
-    snapshot_id = Column(UUIDType, ForeignKey(
+    snapshot_id = Column(UUIDType, ForeignKey('snapshots.id'), nullable=False)
 
     def __str__(self):
         attrs = ['id', 'snapshot_id', 'average', 'peak']
@@ -78,16 +76,15 @@ class LocationSnapshot(GhostBase):
     __tablename__ = 'location_snapshots'
 
     id = Column(UUIDType, primary_key=True)
-    snapshot_id = Column(UUIDType, ForeignKey(
-        'snapshots.id'
+    altitude = Column(Numeric)
+    course = Column(Numeric)
     created_at = Column(DateTime)
+    horizontal_accuracy = Column(Numeric)
     latitude = Column(Numeric)
     longitude = Column(Numeric)
-    altitude = Column(Numeric)
+    snapshot_id = Column(UUIDType, ForeignKey('snapshots.id'), nullable=False)
     speed = Column(Numeric)
-    course = Column(Numeric)
     vertical_accuracy = Column(Numeric)
-    horizontal_accuracy = Column(Numeric)
 
     placemark = relationship(
         'PlacemarkSnapshot', backref=backref('location_snapshots', order_by=id))
@@ -104,18 +101,18 @@ class PlacemarkSnapshot(GhostBase):
     __tablename__ = 'placemark_snapshots'
 
     id = Column(UUIDType, primary_key=True)
-    location_snapshot_id = Column(UUIDType, ForeignKey(
-        'location_snapshots.id'
-    street_number = Column(String)
-    street_name = Column(String)
     address = Column(String)
-    neighborhood = Column(String)
     city = Column(String)
-    county = Column(String)
-    state = Column(String)
     country = Column(String)
+    county = Column(String)
+    location_snapshot_id = Column(
+        UUIDType, ForeignKey('location_snapshots.id'), nullable=False)
+    neighborhood = Column(String)
     postal_code = Column(String)
     region = Column(String)
+    state = Column(String)
+    street_name = Column(String)
+    street_number = Column(String)
 
     def __str__(self):
         attrs = ['id', 'location_snapshot_id', 'street_number', 
@@ -129,31 +126,30 @@ class WeatherSnapshot(GhostBase):
     __tablename__ = 'weather_snapshots'
 
     id = Column(UUIDType, primary_key=True)
-    snapshot_id = Column(UUIDType, ForeignKey(
-        'snapshots.id'
-    station_id = Column(String)
+    dewpoint_celsius = Column(Numeric)
+    feels_like_celsius = Column(Numeric)
+    feels_like_fahrenheit = Column(Numeric)
     latitude = Column(Numeric)
     longitude = Column(Numeric)
-    weather = Column(String)
-    temperature_fahrenheit = Column(Numeric)
-    temperature_celsius = Column(Numeric)
-    feels_like_fahrenheit = Column(Numeric)
-    feels_like_celsius = Column(Numeric)
-    wind_direction = Column(String)
-    wind_degrees = Column(Integer)
-    wind_mph = Column(Numeric)
-    wind_kph = Column(Numeric)
-    wind_gust_mph = Column(Numeric)
-    wind_gust_kph = Column(Numeric)
-    relative_humidity = Column(String)
     precipitation_in = Column(Numeric)
     precipitation_mm = Column(Numeric)
     pressure_in = Column(Numeric)
     pressure_mb = Column(Numeric)
-    dewpoint_celsius = Column(Numeric)
-    visibility_mi = Column(Numeric)
-    visibility_km = Column(Numeric)
+    relative_humidity = Column(String)
+    snapshot_id = Column(UUIDType, ForeignKey('snapshots.id'), nullable=False)
+    station_id = Column(String)
+    temperature_celsius = Column(Numeric)
+    temperature_fahrenheit = Column(Numeric)
     uv = Column(Numeric)
+    visibility_km = Column(Numeric)
+    visibility_mi = Column(Numeric)
+    weather = Column(String)
+    wind_degrees = Column(Integer)
+    wind_direction = Column(String)
+    wind_gust_kph = Column(Numeric)
+    wind_gust_mph = Column(Numeric)
+    wind_kph = Column(Numeric)
+    wind_mph = Column(Numeric)
 
     def __str__(self):
         attrs = ['id', 'snapshot_id', 'station_id', 'latitude', 
