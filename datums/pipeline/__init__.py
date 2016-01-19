@@ -3,8 +3,11 @@
 import codec
 import json
 import mappers
+import uuid
 import warnings
 from datums import models
+
+__all__ = ['codec', 'mapers']
 
 
 def _prepare_snapshot(snapshot):
@@ -28,7 +31,7 @@ def _response(response, action, **kwargs):
     (models.Response.get_or_create_from_legacy_response, models.Response.update,
     or models.Response.delete) on the response.
     '''
-    accessor.action(response, **kwargs)
+    action(response, **kwargs)
 
 
 def _report(report, type, action, key_mapper=mappers._report_key_mapper):
@@ -73,10 +76,11 @@ def _report(report, type, action, key_mapper=mappers._report_key_mapper):
                 item = report[key]
             finally:
                 reports_dict[key_mapper[key]] = item
+    # TODO (jsa): get_or_create, update, and delete take different args
     action(**reports_dict)
     # Recurse nested reports
     for key in reports_nested:
-        _add_report(report[key], action=getattr(
+        _report(report[key], key, action=getattr(
             mappers._model_type_mapper[key], action.__func__.func_name), key_mapper=key_mapper[key])
 
 
@@ -112,6 +116,6 @@ def delete_snapshot(snapshot):
     # Deleting a report cascades to all nested reports and associated responses,
     # so only the top-level report needs to be deleted
     report, responses, photoset = _prepare_snapshot(snapshot)
-    model.Report.delete(**{
+    models.Report.delete(**{
         mappers._report_key_mapper['uniqueIdentifier']: mappers._key_type_mapper[
             'uniqueIdentifier'](str(report['uniqueIdentifier']))})
