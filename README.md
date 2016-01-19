@@ -259,6 +259,7 @@ You can also delete questions from the database. Note that this will delete any 
 # Notes
 
 1. This version of datums only supports JSON exports.
+2. Photo sets are not supported.
 
 # Licensing
 
