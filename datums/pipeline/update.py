@@ -24,7 +24,11 @@ def _update_report(report, type, key_mapper=mappers._report_key_mapper):
     # Set aside nested reports for recursion
     for key in report:
         if isinstance(report[key], dict):
-            reports_nested[key] = report[key]
+            try:
+                reports_nested[key] = mappers._key_type_mapper[key](
+                    str(report[key]) if key != 'draft' else report[key])
+            except KeyError:
+                reports_nested[key] = report[key]
             reports_nested[key][
                 'reportUniqueIdentifier'] = mappers._key_type_mapper[
                     'uniqueIdentifier'](report['uniqueIdentifier'])
@@ -45,7 +49,8 @@ def _update_report(report, type, key_mapper=mappers._report_key_mapper):
                             report['uniqueIdentifier']))
         else:
             try:
-                item = mappers._key_type_mapper[key](str(report[key]))
+                item = mappers._key_type_mapper[key](
+                    str(report[key]) if key != 'draft' else report[key])
             except KeyError:
                 item = report[key]
             finally:
