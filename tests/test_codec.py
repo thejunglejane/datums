@@ -10,15 +10,15 @@ import unittest
 class TestModelsBase(unittest.TestCase):
 
     def setUp(self):
-        self.response = {'questionPrompt' : 'How anxious are you?',
-                         'uniqueIdentifier' : '5496B14F-EAF1-4EF7-85DB-9531FDD7DC17',
-                         'numericResponse' : '0'}
-        self.snapshot = {
+        self.response = {'questionPrompt': 'How anxious are you?',
+                         'uniqueIdentifier': '5496B14F-EAF1-4EF7-85DB-9531FDD7DC17',
+                         'numericResponse': '0'}
+        self.report = {
             'uniqueIdentifier': '1B7AADBF-C137-4F35-A099-D73ACE534CFC'}
 
     def tearDown(self):
         del self.response
-        del self.snapshot
+        del self.report
 
     def test_human_to_boolean_none(self):
         '''Does human_to_boolean return None if a non-list or an empty list is
@@ -54,14 +54,14 @@ class TestModelsBase(unittest.TestCase):
     def test_get_response_accessor_valid_response_type(
             self, mock_session_query, mock_query_filter, mock_query_first):
         '''Does get_response_accessor() return the right response_mapper for
-        the prompt in the response, as well as the question and snapshot ID?
+        the prompt in the response, as well as the question and report ID?
         '''
         mock_query_first.return_value = (1, 5)
-        mapper, ids = codec.get_response_accessor(self.response, self.snapshot)
+        mapper, ids = codec.get_response_accessor(self.response, self.report)
         mock_session_query.assert_called_once_with(
             models.Question.id, models.Question.type)
         self.assertTrue(mock_query_filter.called)
         self.assertEqual(mapper, codec.numeric_accessor)
         self.assertIsInstance(mapper, models.base.ResponseClassLegacyAccessor)
-        self.assertDictEqual(
-            ids, {'question_id': 1, 'snapshot_id': self.snapshot['uniqueIdentifier']})
+        self.assertDictEqual(ids, {
+            'question_id': 1, 'report_id': self.report['uniqueIdentifier']})

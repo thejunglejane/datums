@@ -66,7 +66,7 @@ class GhostBase(Base):
         return q
 
     @classmethod
-    def update(cls, snapshot, **kwargs):
+    def update(cls, report, **kwargs):
         '''
         If a record matching the instance id already exists in the database, 
         update it. If a record matching the instance id does not already exist,
@@ -74,8 +74,8 @@ class GhostBase(Base):
         '''
         q = cls._get_instance(**kwargs)
         if q:
-            for k in snapshot:
-                setattr(q, k, snapshot[k])
+            for k in report:
+                setattr(q, k, report[k])
             _action_and_commit(q, session.add)
         else:
             cls.get_or_create(**kwargs)

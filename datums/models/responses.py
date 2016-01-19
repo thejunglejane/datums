@@ -15,8 +15,8 @@ class Response(GhostBase):
     __tablename__ = 'responses'
 
     id = Column(Integer, primary_key=True)
-    snapshot_id = Column(UUIDType, ForeignKey('snapshots.id'))
     question_id = Column(Integer, ForeignKey('questions.id'))
+    report_id = Column(UUIDType, ForeignKey('reports.id'))
     type = Column(String)
 
     __mapper_args__ = {
@@ -24,13 +24,13 @@ class Response(GhostBase):
     }
 
     def __str__(self):
-        attrs = ['id', 'snapshot_id', 'question_id', 'type']
+        attrs = ['id', 'report_id', 'question_id', 'type']
         super(Response, self).__str__(attrs)
 
 
 class BooleanResponse(Response):
 
-    boolean_response = Column(Boolean)  # answeredOptions
+    boolean_response = Column(Boolean)
 
     __mapper_args__ = {
         'polymorphic_identity': 'boolean',
@@ -39,8 +39,8 @@ class BooleanResponse(Response):
 
 class LocationResponse(Response):
 
-    location_response = Column(String)  # text
-    venue_id = Column(String, nullable=True)  # foursquareVenueId
+    location_response = Column(String)
+    venue_id = Column(String, nullable=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'location',
@@ -49,7 +49,7 @@ class LocationResponse(Response):
 
 class MultiResponse(Response):
 
-    multi_response = Column(postgresql.ARRAY(String))  # answeredOptions
+    multi_response = Column(postgresql.ARRAY(String))
 
     __mapper_args__ = {
         'polymorphic_identity': 'multi',
@@ -67,7 +67,7 @@ class NoteResponse(Response):
 
 class NumericResponse(Response):
 
-    numeric_response = Column(Float)  # numericResponse
+    numeric_response = Column(Float)
 
     __mapper_args__ = {
         'polymorphic_identity': 'numeric',
@@ -76,7 +76,7 @@ class NumericResponse(Response):
 
 class PeopleResponse(Response):
 
-    people_response = Column(postgresql.ARRAY(String))  # text
+    people_response = Column(postgresql.ARRAY(String))
 
     __mapper_args__ = {
         'polymorphic_identity': 'people',
@@ -85,7 +85,7 @@ class PeopleResponse(Response):
 
 class TokenResponse(Response):
 
-    tokens_response = Column(postgresql.ARRAY(String))  # text
+    tokens_response = Column(postgresql.ARRAY(String))
 
     __mapper_args__ = {
         'polymorphic_identity': 'tokens',

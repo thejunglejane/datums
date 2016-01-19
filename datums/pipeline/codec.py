@@ -52,14 +52,14 @@ note_accessor = models.base.ResponseClassLegacyAccessor(
     (lambda x: [i.get('text') for i in x.get('textResponses', [])]))
 
 
-def get_response_accessor(response, snapshot):
+def get_response_accessor(response, report):
     # Determine the question ID and response type based on the prompt
     question_id, response_type = models.session.query(
         models.Question.id, models.Question.type).filter(
             models.Question.prompt == response['questionPrompt']).first()
 
     ids = {'question_id': question_id,  # set the question ID
-           'snapshot_id': snapshot['uniqueIdentifier']}  # set the snapshot ID
+           'report_id': report['uniqueIdentifier']}  # set the report ID
 
     # Dictionary mapping response type to response class, column, and accessor
     # mapper

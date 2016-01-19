@@ -33,7 +33,7 @@ class TestModelsBase(unittest.TestCase):
         kwargs are valid?
         '''
         kwargs = {'section_identifier': 'bar'}
-        obj = models.Snapshot(**kwargs)
+        obj = models.Report(**kwargs)
         setattr(self.GhostBaseInstance, 'section_identifier', 'bar')
         models.base._action_and_commit(obj, mock_session_add)
         mock_session_add.assert_called_once_with(obj)
@@ -42,9 +42,9 @@ class TestModelsBase(unittest.TestCase):
 
 @mock.patch.object(query.Query, 'first')
 @mock.patch.object(query.Query, 'filter_by', return_value=query.Query(
-    models.Snapshot))
+    models.Report))
 @mock.patch.object(models.session, 'query', return_value=query.Query(
-    models.Snapshot))
+    models.Report))
 class TestGhostBase(unittest.TestCase):
 
     def setUp(self):
@@ -54,7 +54,7 @@ class TestGhostBase(unittest.TestCase):
         del self.GhostBaseInstance
 
     def test_get_instance_exists(
-            self, mock_session_query, mock_query_filter_by, mock_query_first):
+            self, mock_session_query, mock_query_filter, mock_query_first):
         '''Does the _get_instance() method return an existing instance of the
         class?
         '''
@@ -63,11 +63,11 @@ class TestGhostBase(unittest.TestCase):
             self.GhostBaseInstance._get_instance(
                 **{'foo': 'bar'}), self.GhostBaseInstance.__class__)
         mock_session_query.assert_called_once_with(models.base.GhostBase)
-        mock_query_filter_by.assert_called_once_with(**{'foo': 'bar'})
+        mock_query_filter.assert_called_once_with(**{'foo': 'bar'})
         self.assertTrue(mock_query_first.called)
 
     def test_get_instance_does_not_exist(
-            self, mock_session_query, mock_query_filter_by, mock_query_first):
+            self, mock_session_query, mock_query_filter, mock_query_first):
         '''Does the _get_instance() method return None if no instance of the 
         class exists?
         '''
@@ -75,12 +75,12 @@ class TestGhostBase(unittest.TestCase):
         self.assertIsNone(
             self.GhostBaseInstance._get_instance(**{'foo': 'bar'}))
         mock_session_query.assert_called_once_with(models.base.GhostBase)
-        mock_query_filter_by.assert_called_once_with(**{'foo': 'bar'})
+        mock_query_filter.assert_called_once_with(**{'foo': 'bar'})
         self.assertTrue(mock_query_first.called)
 
     @mock.patch.object(models.session, 'add')
     def test_get_or_create_get(self, mock_session_add, mock_session_query,
-                               mock_query_filter_by, mock_query_first):
+                               mock_query_filter, mock_query_first):
         '''Does the get_or_create() method return an instance of the class
         without adding it to the session if the instance already exists?
         '''
@@ -90,7 +90,7 @@ class TestGhostBase(unittest.TestCase):
 
     @mock.patch.object(models.session, 'add')
     def test_get_or_create_add(self, mock_session_add, mock_session_query,
-                               mock_query_filter_by, mock_query_first):
+                               mock_query_filter, mock_query_first):
         '''Does the get_or_create() method create a new instance and add it to
         the session if the instance does not already exist?
         '''
@@ -101,29 +101,29 @@ class TestGhostBase(unittest.TestCase):
 
     @mock.patch.object(models.session, 'add')
     def test_update_exists(self, mock_session_add, mock_session_query,
-                           mock_query_filter_by, mock_query_first):
+                           mock_query_filter, mock_query_first):
         '''Does the update() method update the __dict__ attribute of an
         existing instance of the class and add it to the session?
         '''
-        mock_query_first.return_value = models.Snapshot
-        self.GhostBaseInstance.update(snapshot={'foo': 'bar'})
+        mock_query_first.return_value = models.Report
+        self.GhostBaseInstance.update(report={'foo': 'bar'})
         self.assertTrue(mock_session_add.called)
 
     @mock.patch.object(models.session, 'add')
     def test_update_does_not_exist(self, mock_session_add, mock_session_query,
-                                   mock_query_filter_by, mock_query_first):
+                                   mock_query_filter, mock_query_first):
         '''Does the update() method create a new instance and add it to the
         session if the instance does not already exist?
         '''
         mock_query_first.return_value = None
-        self.GhostBaseInstance.update(snapshot={'foo': 'bar'})
+        self.GhostBaseInstance.update(report={'foo': 'bar'})
         self.assertTrue(mock_session_add.called)
 
     @mock.patch.object(models.base, '_action_and_commit')
     @mock.patch.object(models.session, 'delete')
     def test_delete_exists(
             self, mock_session_delete, mock_action_commit,
-            mock_session_query, mock_query_filter_by, mock_query_first):
+            mock_session_query, mock_query_filter, mock_query_first):
         '''Does the delete() method validate an existing instance of the class
         before deleting from the session?
         '''
@@ -135,7 +135,7 @@ class TestGhostBase(unittest.TestCase):
     @mock.patch.object(models.session, 'delete')
     def test_delete_does_not_exist(
             self, mock_session_delete, mock_action_commit,
-            mock_session_query, mock_query_filter_by, mock_query_first):
+            mock_session_query, mock_query_filter, mock_query_first):
         '''Does the delete() method do nothing if the instance does not already
         exists?
         '''
@@ -169,7 +169,7 @@ class TestResponseClassLegacyAccessor(unittest.TestCase):
         isn't an existing instance in the database, without calling
         get_or_create_from_legacy_response()?
         '''
-        _ = models.snapshots.Snapshot()
+        _ = models.Report()
         mock_get_instance.return_value = _
         self.LegacyInstance.update(self.test_response)
         self.assertTrue(mock_get_instance.called)
@@ -195,7 +195,7 @@ class TestResponseClassLegacyAccessor(unittest.TestCase):
         '''Does the delete() method call _action_and_commit() with
         models.session.delete if an instance exists?
         '''
-        _ = models.snapshots.Snapshot()
+        _ = models.Report()
         mock_get_instance.return_value = _
         self.LegacyInstance.delete(self.test_response)
         self.assertTrue(mock_get_instance.called)

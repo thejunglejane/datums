@@ -1,5 +1,6 @@
 import codec
 import mappers
+import uuid
 from datums import models
 
 
@@ -9,39 +10,45 @@ def add_question(question):
     models.Question.get_or_create(**question_dict)
 
 
-def add_response(response, snapshot):
-    accessor, ids = codec.get_response_accessor(response, snapshot)
+def _add_response(response, report):
+    accessor, ids = codec.get_response_accessor(response, report)
     accessor.get_or_create_from_legacy_response(response, **ids)
 
 
-def add_snapshot(snapshot, type, key_mapper=mappers._snapshot_key_mapper):
-    snapshot_dict = {}
-    snapshot_nested = {}
-    # Set aside nested snapshots for recursion
-    for key in snapshot:
-        if isinstance(snapshot[key], dict):
-            snapshot_nested[key] = snapshot[key]
-            snapshot_nested[key]['snapshotUniqueIdentifier'] = mappers._key_type_mapper[
-                'uniqueIdentifier'](snapshot['uniqueIdentifier'])
+def _add_report(report, type, key_mapper=mappers._report_key_mapper):
+    reports_dict = {}
+    reports_nested = {}
+    # Set aside nested reports for recursion
+    for key in report:
+        if isinstance(report[key], dict):
+            reports_nested[key] = report[key]
+            reports_nested[key]['reportUniqueIdentifier'] = mappers._key_type_mapper[
+                'uniqueIdentifier'](report['uniqueIdentifier'])
             if key == 'placemark':
-                snapshot_nested[key]['locationUniqueIdentifier'] = snapshot_nested[
-                    key].pop('snapshotUniqueIdentifier')
+                # Add the parent location report UUID
+                reports_nested[key]['locationUniqueIdentifier'] = reports_nested[
+                    key].pop('reportUniqueIdentifier')
+            elif key == 'altitude':
+                # Not all altitude reports have a uniqueIdentifier
+                reports_nested[key]['uniqueIdentifier'] = report[key].get(
+                    'uniqueIdentifier', uuid.uuid4())
         else:
             try:
-                item = mappers._key_type_mapper[key](str(snapshot[key]))
+                item = mappers._key_type_mapper[key](str(report[key]))
             except KeyError:
-                item = snapshot[key]
+                item = report[key]
             finally:
-                snapshot_dict[key_mapper[key]] = item
-    mappers._model_type_mapper[type].get_or_create(**snapshot_dict)
-    # Recurse nested snapshots
-    for key in snapshot_nested:
-        add_snapshot(snapshot[key], type=key, key_mapper=key_mapper[key])
+                reports_dict[key_mapper[key]] = item
+    mappers._model_type_mapper[type].get_or_create(**reports_dict)
+    # Recurse nested reports
+    for key in reports_nested:
+        _add_report(report[key], type=key, key_mapper=key_mapper[key])
 
 
-def add_report(report):
-    snapshot = report.copy()
-    responses = snapshot.pop('responses')
-    add_snapshot(snapshot)
+def add_snapshot(snapshot):
+    report = snapshot.copy()
+    responses = report.pop('responses', None)
+    photoset = report.pop('photoSet', None)  # TODO (jsa): add support
+    _add_report(report, 'report')
     for response in responses:
-        add_response(response, snapshot)
+        _add_response(response, report)

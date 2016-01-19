@@ -1,6 +1,6 @@
 from questions import *
 from responses import *
-from snapshots import *
+from reports import *
 
 '''SQLAlchemy models for this application.'''
 

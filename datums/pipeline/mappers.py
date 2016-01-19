@@ -4,12 +4,12 @@ from datums import models
 
 
 _model_type_mapper = {
-    'altitude': models.AltitudeSnapshot,
-    'audio': models.AudioSnapshot,
-    'location': models.LocationSnapshot,
-    'placemark': models.PlacemarkSnapshot,
-    'snapshot': models.Snapshot,
-    'weather': models.WeatherSnapshot
+    'altitude': models.AltitudeReport,
+    'audio': models.AudioReport,
+    'location': models.LocationReport,
+    'placemark': models.PlacemarkReport,
+    'report': models.Report,
+    'weather': models.WeatherReport
 }
 
 _key_type_mapper = {
@@ -19,21 +19,23 @@ _key_type_mapper = {
     'uniqueIdentifier': uuid.UUID
 }
 
-# TODO (jsa): just snakeify Reporter's attribute names and call it a day
-_snapshot_key_mapper = {
+# TODO (jsa): just snakeify Reporter's attribute names and call it a day, other-
+# wise datums will break every time Reporter updates attributes
+_report_key_mapper = {
     'altitude': {
-        'adjusted_pressure': 'pressure_adjusted',
+        'adjustedPressure': 'pressure_adjusted',
         'floorsAscended': 'floors_ascended',
         'floorsDescended': 'floors_descended',
         'gpsAltitudeFromLocation': 'gps_altitude_from_location',
         'gpsRawAltitude': 'gps_altitude_raw',
         'pressure': 'pressure',
-        'snapshotUniqueIdentifier': 'snapshot_id'  # added
+        'reportUniqueIdentifier': 'report_id',  # added
+        'uniqueIdentifier': 'id'
     },
     'audio': {
         'avg': 'average',
         'peak': 'peak',
-        'snapshotUniqueIdentifier': 'snapshot_id',  # added
+        'reportUniqueIdentifier': 'report_id',  # added
         'uniqueIdentifier': 'id'
     },
     'background': 'background',
@@ -51,8 +53,9 @@ _snapshot_key_mapper = {
             # TODO (jsa): don't assume U.S. addresses
             'administrativeArea': 'state',
             'country': 'country',
+            'inlandWater': 'inland_water',
             'locality': 'city',
-            'locationUniqueIdentifier': 'locaion_snapshot_id',  # added
+            'locationUniqueIdentifier': 'location_report_id',  # added
             'name': 'address',
             'postalCode': 'postal_code',
             'region': 'region',
@@ -62,7 +65,7 @@ _snapshot_key_mapper = {
             'thoroughfare': 'street_name',
             'uniqueIdentifier': 'id'
         },
-        'snapshotUniqueIdentifier': 'snapshot_id',  # added
+        'reportUniqueIdentifier': 'report_id',  # added
         'speed': 'speed',
         'timestamp': 'created_at',
         'uniqueIdentifier': 'id',
@@ -83,7 +86,7 @@ _snapshot_key_mapper = {
         'pressureIn': 'pressure_in',
         'pressureMb': 'pressure_mb',
         'relativeHumidity': 'relative_humidity',
-        'snapshotUniqueIdentifier': 'snapshot_id',  # added
+        'reportUniqueIdentifier': 'report_id',  # added
         'stationID': 'station_id',
         'tempC': 'temperature_celsius',
         'tempF': 'temperature_fahrenheit',

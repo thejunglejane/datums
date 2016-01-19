@@ -51,26 +51,26 @@ def main():
         files = glob.glob(os.path.expanduser(args.add))
         for file in files:
             with open(file, 'r') as f:
-                reports = json.load(f)
-            # Add questions first because reports need them
-            for question in reports['questions']:
+                day = json.load(f)
+            # Add questions first because responses need them
+            for question in day['questions']:
                 add.add_question(question)
-            for snapshot in reports['snapshots']:
-                add.add_report(snapshot)
+            for snapshot in day['snapshots']:
+                add.add_snapshot(snapshot)
     if args.update:
         files = glob.glob(os.path.expanduser(args.update))
         for file in files:
             with open(file, 'r') as f:
-                reports = json.load(f)
-            for snapshot in reports['snapshots']:
-                update.update_report(snapshot)
+                day = json.load(f)
+            for snapshot in day['snapshots']:
+                update.update_snapshot(snapshot)
     if args.delete:
         files = glob.glob(os.path.expanduser(args.delete))
         for file in files:
             with open(file, 'r') as f:
-                reports = json.load(f)
-            for snapshot in reports['snapshots']:
-                delete.delete_report(snapshot)
+                day = json.load(f)
+            for snapshot in day['snapshots']:
+                delete.delete_snapshot(snapshot)
 
 
 if __name__ == '__main__':
