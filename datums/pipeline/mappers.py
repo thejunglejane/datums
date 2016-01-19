@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import uuid
 from dateutil.parser import parse
 from datums import models

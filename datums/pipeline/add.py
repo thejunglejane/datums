@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import codec
 import mappers
 import uuid

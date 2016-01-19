@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-
+import mock
+import unittest
 from datums import models
 from datums.pipeline import codec
 from sqlalchemy.orm import query
-import mock
-import unittest
 
 
 class TestModelsBase(unittest.TestCase):

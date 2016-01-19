@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
+
+from base import GhostBase
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy import Integer, Numeric, String, DateTime, Boolean
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 
-from base import GhostBase
 
 __all__ = ['Report', 'AltitudeReport', 'AudioReport',
            'LocationReport', 'PlacemarkReport', 'WeatherReport']

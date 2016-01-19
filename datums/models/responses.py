@@ -1,10 +1,12 @@
-from sqlalchemy import Column, ForeignKey
-from sqlalchemy import Boolean, Float, Integer, String
-from sqlalchemy.orm import backref, relationship
-from sqlalchemy.dialects import postgresql
-from sqlalchemy_utils import UUIDType
+# -*- coding: utf-8 -*-
 
 from base import GhostBase, ResponseClassLegacyAccessor
+from sqlalchemy import Column, ForeignKey
+from sqlalchemy import Boolean, Float, Integer, String
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.orm import backref, relationship
+from sqlalchemy_utils import UUIDType
+
 
 __all__ = ['Response', 'BooleanResponse', 'NumericResponse', 'LocationResponse',
            'MultiResponse', 'NoteResponse', 'PeopleResponse', 'TokenResponse']

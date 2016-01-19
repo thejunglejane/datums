@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from datums import models
-from sqlalchemy.orm import query
 import mock
 import random
 import unittest
+from datums import models
+from sqlalchemy.orm import query
 
 
 class TestModelsBase(unittest.TestCase):

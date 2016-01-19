@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
+
+from base import GhostBase, session
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import relationship
 
-from base import GhostBase, session
 
 __all__ = ['Question']
 
