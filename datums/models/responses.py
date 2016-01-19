@@ -17,8 +17,9 @@ class Response(GhostBase):
     __tablename__ = 'responses'
 
     id = Column(Integer, primary_key=True)
-    question_id = Column(Integer, ForeignKey('questions.id'))
-    report_id = Column(UUIDType, ForeignKey('reports.id'))
+    question_id = Column(
+        Integer, ForeignKey('questions.id', ondelete='CASCADE'))
+    report_id = Column(UUIDType, ForeignKey('reports.id', ondelete='CASCADE'))
     type = Column(String)
 
     __mapper_args__ = {

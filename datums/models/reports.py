@@ -26,15 +26,15 @@ class Report(GhostBase):
     steps = Column(Integer)
 
     responses = relationship(
-        'Response', backref=backref('Report', order_by=id, cascade='delete'))
+        'Response', backref=backref('Report', order_by=id), passive_deletes=True)
     altitude_report = relationship(
-        'AltitudeReport', backref=backref('Report'), cascade='delete')
+        'AltitudeReport', backref=backref('Report'), passive_deletes=True)
     audio_report = relationship(
-        'AudioReport', backref=backref('Report'), cascade='delete')
+        'AudioReport', backref=backref('Report'), passive_deletes=True)
     location_report = relationship(
-        'LocationReport', backref=backref('Report'), cascade='delete')
+        'LocationReport', backref=backref('Report'), passive_deletes=True)
     weather_report = relationship(
-        'WeatherReport', backref=backref('Report'), cascade='delete')
+        'WeatherReport', backref=backref('Report'), passive_deletes=True)
 
     def __str__(self):
         attrs = ['id', 'created_at', 'report_impetus', 'battery', 'steps',
@@ -52,7 +52,8 @@ class AltitudeReport(GhostBase):
     gps_altitude_raw = Column(Numeric)
     pressure = Column(Numeric)
     pressure_adjusted = Column(Numeric)
-    report_id = Column(UUIDType, ForeignKey('reports.id'), nullable=False)
+    report_id = Column(
+        UUIDType, ForeignKey('reports.id', ondelete='CASCADE'), nullable=False)
 
     def __str__(self):
         attrs = ['id', 'report_id', 'average', 'peak']
@@ -66,7 +67,8 @@ class AudioReport(GhostBase):
     id = Column(UUIDType, primary_key=True)
     average = Column(Numeric)
     peak = Column(Numeric)
-    report_id = Column(UUIDType, ForeignKey('reports.id'), nullable=False)
+    report_id = Column(
+        UUIDType, ForeignKey('reports.id', ondelete='CASCADE'), nullable=False)
 
     def __str__(self):
         attrs = ['id', 'report_id', 'average', 'peak']
@@ -84,12 +86,13 @@ class LocationReport(GhostBase):
     horizontal_accuracy = Column(Numeric)
     latitude = Column(Numeric)
     longitude = Column(Numeric)
-    report_id = Column(UUIDType, ForeignKey('reports.id'), nullable=False)
+    report_id = Column(
+        UUIDType, ForeignKey('reports.id', ondelete='CASCADE'), nullable=False)
     speed = Column(Numeric)
     vertical_accuracy = Column(Numeric)
 
-    placemark = relationship(
-        'PlacemarkReport', backref=backref('location_reports', order_by=id))
+    placemark = relationship('PlacemarkReport', backref=backref(
+        'location_reports', order_by=id), passive_deletes=True)
 
     def __str__(self):
         attrs = ['id', 'report_id', 'created_at', 'latitude',
@@ -109,7 +112,8 @@ class PlacemarkReport(GhostBase):
     county = Column(String)
     inland_water = Column(String)
     location_report_id = Column(
-        UUIDType, ForeignKey('location_reports.id'), nullable=False)
+        UUIDType, ForeignKey('location_reports.id', ondelete='CASCADE'),
+        nullable=False)
     neighborhood = Column(String)
     postal_code = Column(String)
     region = Column(String)
@@ -139,7 +143,8 @@ class WeatherReport(GhostBase):
     pressure_in = Column(Numeric)
     pressure_mb = Column(Numeric)
     relative_humidity = Column(String)
-    report_id = Column(UUIDType, ForeignKey('reports.id'), nullable=False)
+    report_id = Column(
+        UUIDType, ForeignKey('reports.id', ondelete='CASCADE'), nullable=False)
     station_id = Column(String)
     temperature_celsius = Column(Numeric)
     temperature_fahrenheit = Column(Numeric)
