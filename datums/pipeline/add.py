@@ -24,12 +24,14 @@ def _add_report(report, type, key_mapper=mappers._report_key_mapper):
     for key in report:
         if isinstance(report[key], dict):
             reports_nested[key] = report[key]
-            reports_nested[key]['reportUniqueIdentifier'] = mappers._key_type_mapper[
-                'uniqueIdentifier'](report['uniqueIdentifier'])
+            reports_nested[key][
+                'reportUniqueIdentifier'] = mappers._key_type_mapper[
+                    'uniqueIdentifier'](report['uniqueIdentifier'])
             if key == 'placemark':
                 # Add the parent location report UUID
-                reports_nested[key]['locationUniqueIdentifier'] = reports_nested[
-                    key].pop('reportUniqueIdentifier')
+                reports_nested[key][
+                    'locationUniqueIdentifier'] = reports_nested[key].pop(
+                        'reportUniqueIdentifier')
             elif key == 'altitude':
                 # Not all altitude reports have a uniqueIdentifier
                 reports_nested[key]['uniqueIdentifier'] = report[key].get(
