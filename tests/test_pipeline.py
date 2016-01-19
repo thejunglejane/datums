@@ -191,8 +191,10 @@ class TestPipelineUpdate(unittest.TestCase):
         update._update_report(
             self.report['audio'], 'audio', mappers._report_key_mapper['audio'])
         mock_update.assert_called_once_with(self.report['audio'], **{
-            'average': 5, 'id': uuid.UUID(self.report['audio']['uniqueIdentifier']),
-            'peak': 10, 'report_id': uuid.UUID(self.report['uniqueIdentifier'])})
+            'average': 5, 'id': uuid.UUID(
+                self.report['audio']['uniqueIdentifier']),
+            'peak': 10, 'report_id': uuid.UUID(
+                self.report['uniqueIdentifier'])})
 
 
 class TestPipelineDelete(unittest.TestCase):
@@ -244,40 +246,22 @@ class TestPipelineDelete(unittest.TestCase):
             'type': self.question['questionType'],
             'prompt': self.question['prompt']})
 
-    @mock.patch.object(delete, '_delete_response')
     @mock.patch.object(delete, '_delete_report')
-    def test_delete_snapshot(self, mock_delete_report, mock_delete_response):
-        '''Does delete_snapshot delete the report and response(s) included in
-        the snapshot provided?
+    def test_delete_snapshot(self, mock_delete_report):
+        '''Does delete_snapshot delete the report included in the snapshot
+        provided?
         '''
         # Simulate popping of 'responses' attribute from snapshot
         _ = {key: value for key, value in self.report.iteritems()
             if key != 'responses'}
         delete.delete_snapshot(self.report)
         mock_delete_report.assert_called_once_with(_, 'report')
-        mock_delete_response.assert_called_once_with(self.response, _)
-
-    @mock.patch.object(models.base.ResponseClassLegacyAccessor, 'delete')
-    @mock.patch.object(codec, 'get_response_accessor')
-    def test_delete_response(self, mock_get_accessor, mock_delete):
-        '''Does _delete_response() call get_reponse_accessor() and
-        delete()?
-        '''
-        _accessor = models.base.ResponseClassLegacyAccessor(
-            response_class=random.choice(self._response_classes),
-            column='foo_response', accessor=(lambda x: x.get('foo')))
-        _ids = {'foo': 'bar'}
-        mock_get_accessor.return_value = _accessor, _ids
-        delete._delete_response(self.response, self.report)
-        mock_get_accessor.assert_called_once_with(self.response, self.report)
-        mock_delete.assert_called_once_with(self.response, **_ids)
 
     @mock.patch.object(models.AudioReport, 'delete')
     def test_delete_report(self, mock_delete):
         '''Does _delete_report() call delete() with the report info in the
         report passed, and recurse nested reports within the report? 
         '''
-        delete._delete_report(
-            self.report['audio'], 'audio', mappers._report_key_mapper['audio'])
+        delete._delete_report(self.report, 'report', mappers._report_key_mapper)
         mock_delete.assert_called_once_with(**{
-            'id': uuid.UUID(self.report['audio']['uniqueIdentifier'])})
+            'id': uuid.UUID(self.report['uniqueIdentifier'])})

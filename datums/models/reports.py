@@ -26,15 +26,15 @@ class Report(GhostBase):
     steps = Column(Integer)
 
     responses = relationship(
-        'Response', backref=backref('Report', order_by=id))
+        'Response', backref=backref('Report', order_by=id, cascade='delete'))
     altitude_report = relationship(
-        'AltitudeReport', backref=backref('Report'))
+        'AltitudeReport', backref=backref('Report'), cascade='delete')
     audio_report = relationship(
-        'AudioReport', backref=backref('Report'))
+        'AudioReport', backref=backref('Report'), cascade='delete')
     location_report = relationship(
-        'LocationReport', backref=backref('Report'))
+        'LocationReport', backref=backref('Report'), cascade='delete')
     weather_report = relationship(
-        'WeatherReport', backref=backref('Report'))
+        'WeatherReport', backref=backref('Report'), cascade='delete')
 
     def __str__(self):
         attrs = ['id', 'created_at', 'report_impetus', 'battery', 'steps',

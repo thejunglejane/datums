@@ -199,7 +199,7 @@ To update an individual snapshot within a snapshoter file with
 
 ## Deleting reports and responses
 
-Deleting reports and responses from the database is much the same. 
+Deleting reports and responses from the database is much the same. Note that deleting a report will delete any responses included in the snapshot containing that report.
 
 #### Command Line
 You can delete all snapshots in your Dropbox Reporter folder with
