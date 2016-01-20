@@ -65,17 +65,18 @@ class GhostBase(Base):
         _action_and_commit(q, session.add)
         return q
 
+    # TODO (jsa): _traverse_report only needs to return the ID for an update
     @classmethod
-    def update(cls, report, **kwargs):
+    def update(cls, **kwargs):
         '''
         If a record matching the instance id already exists in the database, 
         update it. If a record matching the instance id does not already exist,
         create a new record.
         '''
-        q = cls._get_instance(**kwargs)
+        q = cls._get_instance(**{'id': kwargs['id']})
         if q:
-            for k in report:
-                setattr(q, k, report[k])
+            for k, v in kwargs.items():
+                setattr(q, k, v)
             _action_and_commit(q, session.add)
         else:
             cls.get_or_create(**kwargs)
@@ -168,4 +169,4 @@ class LocationResponseClassLegacyAccessor(ResponseClassLegacyAccessor):
             setattr(response_cls, self.column, self.accessor(response))
             setattr(
                 response_cls, self.venue_column, self.venue_accessor(response))
-            _action_and_commit(response_class, session.add)
+            _action_and_commit(response_cls, session.add)

@@ -74,24 +74,39 @@ def _traverse_report(report, action, key_mapper=mappers._report_key_mapper):
                     nested_level_dict[key]['uniqueIdentifier'] = uuid.uuid4()
                 else:
                     warnings.warn('''
-                        No uniqueIdentifier found for altitude report in {0}.
-                        Existing altitude report will not be updated or deleted.
+                        No uniqueIdentifier found for AltitudeReport in {0}.
+                        Existing altitude report will not be updated.
                         '''.format(report['uniqueIdentifier']))
+                    del nested_level_dict[key]
     return top_level_dict, nested_level_dict
 
 
-def _report_add(report, type=models.Report):
-    top_level_report, nested_report = _traverse_report(report, 'get_or_create')
+def _report_add(
+        report, type=models.Report, key_mapper=mappers._report_key_mapper):
+    top_level_report, nested_report = _traverse_report(
+        report, 'get_or_create', key_mapper)
     type.get_or_create(**top_level_report)
     for key in nested_report:
-        _report_add(nested_report[key], mappers._model_type_mapper[key])
+        try:
+            nested_key_mapper = mappers._report_key_mapper[key]
+        except KeyError:
+            nested_key_mapper = mappers._report_key_mapper['location'][key]
+        _report_add(
+            nested_report[key], mappers._model_type_mapper[key], nested_key_mapper)
 
 
-def _report_update(report, type=models.Report):
-    top_level_report, nested_report = _traverse_report(report, 'update')
-    type.update(report, **top_level_report)
+def _report_update(
+        report, type=models.Report, key_mapper=mappers._report_key_mapper):
+    top_level_report, nested_report = _traverse_report(
+        report, 'update', key_mapper)
+    type.update(**top_level_report)
     for key in nested_report:
-        _report_update(nested_report[key], mappers._model_type_mapper[key])
+        try:
+            nested_key_mapper = mappers._report_key_mapper[key]
+        except KeyError:
+            nested_key_mapper = mappers._report_key_mapper['location'][key]
+        _report_update(
+            nested_report[key], mappers._model_type_mapper[key], nested_key_mapper)
 
 
 def add_question(question):

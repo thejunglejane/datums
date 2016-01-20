@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 import mock
 import random
 import unittest
 import uuid
 from dateutil.parser import parse
+from dateutil.tz import tzoffset
 from datums import models
 from datums import pipeline
+from datums.pipeline import mappers
 from sqlalchemy.orm import query
 
 
@@ -94,17 +97,55 @@ class TestPipelineAdd(TestPipeline):
             pipeline.codec.numeric_accessor.get_or_create_from_legacy_response)
         mock_get_create.assert_called_once_with(self.responses)
 
+    def test_traverse_report(self):
+        '''Does _traverse_report() return two dictionaries containing the top
+        and nested levels of the report passed?
+        '''
+        top, nested = pipeline._traverse_report(self.report, 'get_or_create')
+        self.assertDictEqual(top, {
+            'battery': 0.8, 'created_at': datetime.datetime(
+                2015, 3, 22, 9, 10, 35, tzinfo=tzoffset(None, -14400)),
+            'steps': 100, 'connection': 0, 'draft': False, 'background': 0,
+            'report_impetus': 4, 'section_identifier': '1-2016-1-14',
+            'id': uuid.UUID('f2b8805c-b107-462d-b6ff-d67532ef797b')})
+        self.assertDictEqual(nested, {
+            'weather': self.report['weather'],
+            'audio': self.report['audio']})
+        top, nested = pipeline._traverse_report(
+            self.report['audio'], 'get_or_create',
+            mappers._report_key_mapper['audio'])
+        self.assertDictEqual(top, {
+            'report_id': uuid.UUID(
+                'f2b8805c-b107-462d-b6ff-d67532ef797b'), 'average': 5,
+            'id': uuid.UUID(
+                '212cd61d-faf4-4a43-b52a-be5463b0b035'), 'peak': 10})
+        self.assertDictEqual(nested, {})
+        top, nested = pipeline._traverse_report(
+            self.report['weather'], 'get_or_create',
+            mappers._report_key_mapper['weather'])
+        self.assertDictEqual(top, {
+            'wind_direction': 'NNW', 'weather': 'clear', 'id': uuid.UUID(
+                '4c0bb156-1176-47d9-bba9-cc7950ca934d'),
+            'temperature_fahrenheit': 67, 'feels_like_fahrenheit': 30,
+            'dewpoint_celsius': -12, 'latitude': 40.7, 'precipitation_in': 0,
+            'wind_mph': 3.4, 'wind_gust_kph': 7.9, 'precipitation_mm': 0,
+            'station_id': 'KNYNEWYO118', 'temperature_celsius': 50,
+            'visibility_km': 16.1, 'visibility_mi': 10, 'report_id': uuid.UUID(
+                'f2b8805c-b107-462d-b6ff-d67532ef797b'), 'wind_degrees': 325,
+            'wind_kph': 5.5, 'wind_gust_mph': 4.9, 'uv': 1, 'longitude': -71.1,
+            'relative_humidity': '38%', 'feels_like_celsius': -1})
+        self.assertDictEqual(nested, {})
+
     @mock.patch.object(models.Report, 'get_or_create')
     @mock.patch.object(pipeline, '_traverse_report')
     def test_report_add(self, mock_traverse_report, mock_get_create):
-        '''Does _report_add(), call _traverse_report() with the report provided
-        with the action get_or_create() of nested reports within the report
-        provided?
+        '''Does _report_add() call _traverse_report() with the report provided
+        with the action get_or_create()?
         '''
         mock_traverse_report.return_value = ({'foo': 'bar'}, {})
         pipeline._report_add(self.report, models.Report)
         mock_traverse_report.assert_called_once_with(
-            self.report, 'get_or_create')
+            self.report, 'get_or_create', mappers._report_key_mapper)
         mock_get_create.assert_called_once_with(**{'foo': 'bar'})
 
     @mock.patch.object(pipeline, '_question')
@@ -132,7 +173,8 @@ class TestPipelineAdd(TestPipeline):
             {'question_id': 1, 'report_id': self.report['uniqueIdentifier']})
         pipeline.add_snapshot(self.snapshot)
         mock_add_report.assert_called_once_with(self.report)
-        mock_get_accessor.assert_called_once_with(self.responses[0], self.report)
+        mock_get_accessor.assert_called_once_with(
+            self.responses[0], self.report)
         mock_add_response.assert_called_once_with(
             self.responses[0],
             pipeline.codec.numeric_accessor.get_or_create_from_legacy_response,
@@ -172,8 +214,8 @@ class TestPipelineUpdate(TestPipeline):
         mock_traverse_report.return_value = ({'foo': 'bar'}, {})
         pipeline._report_update(self.report, models.Report)
         mock_traverse_report.assert_called_once_with(
-            self.report, 'update')
-        mock_update.assert_called_once_with(self.report, **{'foo': 'bar'})
+            self.report, 'update', mappers._report_key_mapper)
+        mock_update.assert_called_once_with(**{'foo': 'bar'})
 
     @mock.patch.object(pipeline, '_question')
     def test_update_question(self, mock_question):

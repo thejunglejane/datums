@@ -105,8 +105,10 @@ class TestGhostBase(unittest.TestCase):
         '''Does the update() method update the __dict__ attribute of an
         existing instance of the class and add it to the session?
         '''
-        mock_query_first.return_value = models.Report
-        self.GhostBaseInstance.update(report={'foo': 'bar'})
+        _ = models.Report
+        mock_query_first.return_value = _
+        self.GhostBaseInstance.update({'foo': 'bar'})
+        self.assertTrue(hasattr(_, 'foo'))
         self.assertTrue(mock_session_add.called)
 
     @mock.patch.object(models.session, 'add')
