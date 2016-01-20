@@ -34,54 +34,64 @@ def _response(response, action, **kwargs):
     action(response, **kwargs)
 
 
-def _report(report, type, action, key_mapper=mappers._report_key_mapper):
-    '''Perform the action specified (get_or_create, update, or delete) on the
-    report.
+def _traverse_report(report, action, key_mapper=mappers._report_key_mapper):
+    '''Return the dictionary of **kwargs based on the report and the action
+    specified.
     '''
-    reports_dict = {}
-    reports_nested = {}
+    _top_level = [key for key in report if not isinstance(report[key], dict)]
     # Set aside nested reports for recursion
-    for key in report:
-        if isinstance(report[key], dict):
+    _nested_level = [key for key in report if isinstance(report[key], dict)]
+    top_level_dict = {}
+    nested_level_dict = {}
+    for key in _top_level:
+        try:
+            item = mappers._key_type_mapper[key](
+                str(report[key]) if key != 'draft' else report[key])
+        except KeyError:
+            item = report[key]
+        finally:
+            top_level_dict[key_mapper[key]] = item
+    for key in _nested_level:
+        try:
+            nested_level_dict[key] = mappers._key_type_mapper[key](
+                str(report[key]) if key != 'draft' else report[key])
+        except KeyError:
+            nested_level_dict[key] = report[key]
+        nested_level_dict[key][
+            'reportUniqueIdentifier'] = mappers._key_type_mapper[
+                'uniqueIdentifier'](report['uniqueIdentifier'])
+        if key == 'placemark':
+            # Add the parent location report UUID
+            nested_level_dict[key][
+                'locationUniqueIdentifier'] = nested_level_dict[key].pop(
+                    'reportUniqueIdentifier')
+        elif key == 'altitude':
             try:
-                reports_nested[key] = mappers._key_type_mapper[key](
-                    str(report[key]) if key != 'draft' else report[key])
-            except KeyError:
-                reports_nested[key] = report[key]
-            reports_nested[key][
-                'reportUniqueIdentifier'] = mappers._key_type_mapper[
-                    'uniqueIdentifier'](report['uniqueIdentifier'])
-            if key == 'placemark':
-                # Add the parent location report UUID
-                reports_nested[key][
-                    'locationUniqueIdentifier'] = reports_nested[key].pop(
-                        'reportUniqueIdentifier')
-            elif key == 'altitude':
-                try:
-                    reports_nested[key]['uniqueIdentifier'] = report[key][
-                        'uniqueIdentifier']
-                except KeyError:  # not all altitude reports have a UUID
-                    if action.__func__.func_name == 'get_or_create':
-                        reports_nested[key]['uniqueIdentifier'] = uuid.uuid4()
-                    else:
-                        warnings.warn('''
-                            No uniqueIdentifier found for altitude report in {0}.
-                            Existing altitude report will not be updated or deleted.
-                            '''.format(report['uniqueIdentifier']))
-        else:
-            try:
-                item = mappers._key_type_mapper[key](
-                    str(report[key]) if key != 'draft' else report[key])
-            except KeyError:
-                item = report[key]
-            finally:
-                reports_dict[key_mapper[key]] = item
-    # TODO (jsa): get_or_create, update, and delete take different args
-    action(**reports_dict)
-    # Recurse nested reports
-    for key in reports_nested:
-        _report(report[key], key, action=getattr(
-            mappers._model_type_mapper[key], action.__func__.func_name), key_mapper=key_mapper[key])
+                nested_level_dict[key]['uniqueIdentifier'] = report[key][
+                    'uniqueIdentifier']
+            except KeyError:  # not all altitude reports have a UUID
+                if action == 'get_or_create':
+                    nested_level_dict[key]['uniqueIdentifier'] = uuid.uuid4()
+                else:
+                    warnings.warn('''
+                        No uniqueIdentifier found for altitude report in {0}.
+                        Existing altitude report will not be updated or deleted.
+                        '''.format(report['uniqueIdentifier']))
+    return top_level_dict, nested_level_dict
+
+
+def _report_add(report, type=models.Report):
+    top_level_report, nested_report = _traverse_report(report, 'get_or_create')
+    type.get_or_create(**top_level_report)
+    for key in nested_report:
+        _report_add(nested_report[key], mappers._model_type_mapper[key])
+
+
+def _report_update(report, type=models.Report):
+    top_level_report, nested_report = _traverse_report(report, 'update')
+    type.update(report, **top_level_report)
+    for key in nested_report:
+        _report_update(nested_report[key], mappers._model_type_mapper[key])
 
 
 def add_question(question):
@@ -90,7 +100,7 @@ def add_question(question):
 
 def add_snapshot(snapshot):
     report, responses, photoset = _prepare_snapshot(snapshot)
-    _report(report, 'report', models.Report.get_or_create)
+    _report_add(report)
     for response in responses:
         accessor, ids = codec.get_response_accessor(response, report)
         _response(response, accessor.get_or_create_from_legacy_response, **ids)
@@ -102,7 +112,7 @@ def update_question(question):
 
 def update_snapshot(snapshot):
     report, responses, photoset = _prepare_snapshot(snapshot)
-    _report(report, 'report', models.Report.update)
+    _report_update(report)
     for response in responses:
         accessor, ids = codec.get_response_accessor(response, report)
         _response(response, accessor.update, **ids)
