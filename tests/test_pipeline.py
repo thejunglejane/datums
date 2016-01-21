@@ -173,6 +173,18 @@ class TestReportPipeline(unittest.TestCase):
                                  'floorsDescended', 'pressure',
                                  'reportUniqueIdentifier']))
 
+    def test_report_pipeline_report_attr_not_supported(self):
+        '''Does the _report() method on ReportPipeline objects generate a
+        warning if there is an attribute in the report that is not yet
+        supported (i.e., not yet in mappers._report_key_mapper)?
+        '''
+        r = {'foo': 'bar'}
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always')
+            pipeline.ReportPipeline(r)._report(models.Report.get_or_create)
+            self.assertEquals(len(w), 1)
+            self.assertEquals(w[-1].category, UserWarning)
+
     def test_report_pipeline_report_update_altitude_no_uuid(self):
         '''Does the _report() method on ReportPipeline objects NOT add a
         uniqueIdentifier to a nested AltitudeReport and generate a warning if

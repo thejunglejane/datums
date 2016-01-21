@@ -75,7 +75,14 @@ class ReportPipeline(object):
             except KeyError:
                 item = self.report[key]
             finally:
-                top_level_dict[key_mapper[key]] = item
+                try:
+                    top_level_dict[key_mapper[key]] = item
+                except KeyError:
+                    warnings.warn('''
+                        {0} is not currently supported by datums and will be ignored.
+                        Would you consider submitting an issue to add support?
+                        https://www.github.com/thejunglejane/datums/issues
+                        '''.format(key))
         for key in _nested_level:
             nested_levels_dict[key] = self.report[key]
             # Add the parent report ID
