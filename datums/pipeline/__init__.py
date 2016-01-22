@@ -64,9 +64,10 @@ class ReportPipeline(object):
         '''
         _top_level = [
             k for k, v in self.report.items() if not isinstance(v, dict)]
+        _nested_level = [
+            k for k, v in self.report.items() if isinstance(v, dict)]
         top_level_dict = {}
-        nested_levels_dict = {
-            k: v for k, v in self.report.items() if isinstance(v, dict)}
+        nested_levels_dict = {}
         for key in _top_level:
             try:
                 item = mappers._key_type_mapper[key](str(
@@ -74,12 +75,20 @@ class ReportPipeline(object):
             except KeyError:
                 item = self.report[key]
             finally:
-                top_level_dict[key_mapper[key]] = item
-        for key in nested_levels_dict:
+                try:
+                    top_level_dict[key_mapper[key]] = item
+                except KeyError:
+                    warnings.warn('''
+                        {0} is not currently supported by datums and will be ignored.
+                        Would you consider submitting an issue to add support?
+                        https://www.github.com/thejunglejane/datums/issues
+                        '''.format(key))
+        for key in _nested_level:
+            nested_levels_dict[key] = self.report[key]
             # Add the parent report ID
             nested_levels_dict[key][
                 'reportUniqueIdentifier'] = mappers._key_type_mapper[
-                    'uniqueIdentifier'](self.report['uniqueIdentifier'])
+                    'uniqueIdentifier'](str(self.report['uniqueIdentifier']))
             if key == 'placemark':
                 # Add the parent location report UUID
                 nested_levels_dict[key][
@@ -139,7 +148,7 @@ class SnapshotPipeline(object):
         self.report = self.snapshot.copy()
         self.responses = self.report.pop('responses')
 
-        _ = self.report.pop('photoSet')  # TODO (jsa): add support
+        _ = self.report.pop('photoSet', None)  # TODO (jsa): add support
 
     def add(self):
         ReportPipeline(self.report).add()

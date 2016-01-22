@@ -50,23 +50,23 @@ def main():
                 day = json.load(f)
             # Add questions first because responses need them
             for question in day['questions']:
-                pipeline.add_question(question)
+                pipeline.QuestionPipeline(question).add()
             for snapshot in day['snapshots']:
-                pipeline.add_snapshot(snapshot)
+                pipeline.SnapshotPipeline(snapshot).add()
     if args.update:
         files = glob.glob(os.path.expanduser(args.update))
         for file in files:
             with open(file, 'r') as f:
                 day = json.load(f)
             for snapshot in day['snapshots']:
-                pipeline.update_snapshot(snapshot)
+                pipeline.SnapshotPipeline(snapshot).update()
     if args.delete:
         files = glob.glob(os.path.expanduser(args.delete))
         for file in files:
             with open(file, 'r') as f:
                 day = json.load(f)
             for snapshot in day['snapshots']:
-                pipeline.delete_snapshot(snapshot)
+                pipeline.SnapshotPipeline(snapshot).delete()
 
 
 if __name__ == '__main__':
