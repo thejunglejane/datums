@@ -70,6 +70,29 @@ or, from Python
 >>> base.database_teardown(base.engine)
 ```
 
+#### Migrating to v1.0.0
+
+v1.0.0 introduces some changes to the database schema and the datums data model. To upgrade your existing datums database to a v1.0.0-compatible schema, a series of alembic mirations have been provided. To migrate your database
+
+```bash
+$ pip install --upgrade datums
+$ alembic upgrade head
+$ datums --update "/path/to/reporter/folder/*.json"
+$ datums --add "/path/to/reporter/folder/*.json"
+```
+
+After migrating, it's important to `--update` all reports to add the `pressure_in` and `pressure_mb` attributes on weather reports as well as the `inland_water` attribute to placemark reports. You can safely ignore the `UserWarning` that no `uniqueIdentifier` can be found for altitude reports; those altitude reports will be added when you `--add`.
+
+v1.0.0 adds support for altitude reports. After updating, you'll need to `--add` all your reports to capture altitude reports from before May, 2015. They must be added instead of updated because altitude reports have not always had `uniqueIdentifiers`. Adding will allow datums to create UUIDs for these earlier altitude reports. If no UUID is found for an altitude report, datums canot update or delete it. See [issue 29](https://github.com/thejunglejane/datums/issues/29) for more information.
+
+Alternatively, you could just teardown your existing datums database and setup a new one.
+```bash
+$ datums --teardown
+$ pip install --upgrade datums
+$ datums --setup
+$ datums --add "/path/to/reporter/folder/*.json"
+```
+
 # Adding, Updating, and Deleting
 The `pipeline` module allows you to add, update, and delete reports and questions.
 

@@ -70,8 +70,12 @@ class ReportPipeline(object):
         nested_levels_dict = {}
         for key in _top_level:
             try:
-                item = mappers._key_type_mapper[key](str(
-                    self.report[key]) if key != 'draft' else self.report[key])
+                if key == 'date' or key == 'timestamp':
+                    item = mappers._key_type_mapper[key](
+                        str(self.report[key]), **{'ignoretz': True})
+                else:
+                    item = mappers._key_type_mapper[key](str(
+                        self.report[key]) if key != 'draft' else self.report[key])
             except KeyError:
                 item = self.report[key]
             finally:
