@@ -1,3 +1,4 @@
+import os
 from __future__ import with_statement
 from alembic import context
 from sqlalchemy import engine_from_config, pool
@@ -35,7 +36,7 @@ def run_migrations_offline():
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = os.environ['DATABASE_URI']
     context.configure(
         url=url, target_metadata=target_metadata, literal_binds=True)
 
