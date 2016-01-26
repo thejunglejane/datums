@@ -85,7 +85,7 @@ class TestGhostBase(unittest.TestCase):
         without adding it to the session if the instance already exists?
         '''
         mock_query_first.return_value = True
-        self.assertTrue(self.GhostBaseInstance.get_or_create())
+        self.assertTrue(self.GhostBaseInstance.get_or_create(**{'id': 'foo'}))
         mock_session_add.assert_not_called()
 
     @mock.patch.object(models.session, 'add')
@@ -96,7 +96,8 @@ class TestGhostBase(unittest.TestCase):
         '''
         mock_query_first.return_value = None
         self.assertIsInstance(
-            self.GhostBaseInstance.get_or_create(), models.base.GhostBase)
+            models.Report.get_or_create(
+                **{'id': 'foo'}), models.base.GhostBase)
         self.assertTrue(mock_session_add.called)
 
     @mock.patch.object(models.session, 'add')

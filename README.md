@@ -70,6 +70,18 @@ or, from Python
 >>> base.database_teardown(base.engine)
 ```
 
+#### Migrating to v1.0.0
+
+v1.0.0 introduced some changes to the database schema and the datums data model. To upgrade your existing datums database to a v1.0.0-compatible schema, a series of alembic mirations have been provided. To migrate your database
+
+```bash
+$ pip install --upgrade datums
+$ alembic upgrade head
+$ datums --add "/path/to/reporter/folder/*.json"
+```
+
+v1.0.0 adds support for altitude reports. After `--migrate`ing, it's important to `--add` all your reports to capture these altitude reports. They must be added instead of updated because altitude reports have not always had `uniqueIdentifiers`. Adding will allow datums to create UUIDs for these altitude reports. If no UUID is found for an altitude report, datums canot update or delete it. See [issue 29](https://github.com/thejunglejane/datums/issues/29) for more information.
+
 # Adding, Updating, and Deleting
 The `pipeline` module allows you to add, update, and delete reports and questions.
 
