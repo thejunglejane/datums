@@ -103,7 +103,7 @@ class ReportPipeline(object):
                 else:
                     del nested_levels_dict[key]
                     warnings.warn('''
-                        No uniqueIdentifier found for AltitudeReport in {1}.
+                        No uniqueIdentifier found for AltitudeReport in {0}.
                         Existing altitude report will not be updated.
                         '''.format(self.report['uniqueIdentifier']))
         return top_level_dict, nested_levels_dict

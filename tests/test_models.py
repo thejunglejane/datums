@@ -107,8 +107,8 @@ class TestGhostBase(unittest.TestCase):
         '''
         _ = models.Report
         mock_query_first.return_value = _
-        self.GhostBaseInstance.update({'foo': 'bar'})
-        self.assertTrue(hasattr(_, 'foo'))
+        self.GhostBaseInstance.update(**{'id': 'bar'})
+        self.assertTrue(hasattr(_, 'id'))
         self.assertTrue(mock_session_add.called)
 
     @mock.patch.object(models.session, 'add')
@@ -118,7 +118,7 @@ class TestGhostBase(unittest.TestCase):
         session if the instance does not already exist?
         '''
         mock_query_first.return_value = None
-        self.GhostBaseInstance.update(report={'foo': 'bar'})
+        models.Report.update(**{'id': 'bar'})
         self.assertTrue(mock_session_add.called)
 
     @mock.patch.object(models.base, '_action_and_commit')

@@ -58,6 +58,7 @@ class TestQuestionPipeline(unittest.TestCase):
         mock_delete.assert_called_once_with(**self.question_dict)
 
 
+@mock.patch.object(codec, 'get_response_accessor')
 class TestResponsePipeline(unittest.TestCase):
 
     def setUp(self):
@@ -76,9 +77,11 @@ class TestResponsePipeline(unittest.TestCase):
         delattr(self, 'accessor')
         delattr(self, 'ids')
 
-    def test_response_pipeline_init(self):
+    def test_response_pipeline_init(self, mock_get_accessor):
         '''Are ResponsePipeline objects fully initialized?
         '''
+        mock_get_accessor.return_value = return_value=(
+            codec.numeric_accessor, self.ids)
         r = pipeline.ResponsePipeline(self.response, self.report)
         self.assertTrue(hasattr(r, 'accessor'))
         self.assertTrue(hasattr(r, 'ids'))
@@ -87,28 +90,36 @@ class TestResponsePipeline(unittest.TestCase):
 
     @mock.patch.object(
         codec.numeric_accessor, 'get_or_create_from_legacy_response')
-    def test_response_pipeline_add(self, mock_get_create_legacy):
+    def test_response_pipeline_add(
+            self, mock_get_create_legacy, mock_get_accessor):
         '''Does the add() method on ResponsePipeline objects call
         codec.numeric_accessor.get_or_create_from_legacy_response with the
         reponse and the ids attribute?
         '''
+        mock_get_accessor.return_value = return_value=(
+            codec.numeric_accessor, self.ids)
         pipeline.ResponsePipeline(self.response, self.report).add()
+        mock_get_accessor.assert_called_once_with(self.response, self.report)
         mock_get_create_legacy.assert_called_once_with(
             self.response, **self.ids)
 
     @mock.patch.object(codec.numeric_accessor, 'update')
-    def test_response_pipeline_update(self, mock_update):
+    def test_response_pipeline_update(self, mock_update, mock_get_accessor):
         '''Does the update() method on ResponsePipeline objects call
         codec.numeric_accessor.update with the reponse and the ids attribute?
         '''
+        mock_get_accessor.return_value = return_value=(
+            codec.numeric_accessor, self.ids)
         pipeline.ResponsePipeline(self.response, self.report).update()
         mock_update.assert_called_once_with(self.response, **self.ids)
 
     @mock.patch.object(codec.numeric_accessor, 'delete')
-    def test_response_pipeline_delete(self, mock_delete):
+    def test_response_pipeline_delete(self, mock_delete, mock_get_accessor):
         '''Does the delete() method on ResponsePipeline objects call
         codec.numeric_accessor.delete with the reponse and the ids attribute?
         '''
+        mock_get_accessor.return_value = return_value=(
+            codec.numeric_accessor, self.ids)
         pipeline.ResponsePipeline(self.response, self.report).delete()
         mock_delete.assert_called_once_with(self.response, **self.ids)
 
@@ -273,6 +284,8 @@ class TestSnapshotPipeline(unittest.TestCase):
                  'uniqueIdentifier': uuid.uuid4()}, 'text': 'Home'}]}
         self.report = self.snapshot.copy()
         self.responses = self.report.pop('responses')
+        self.ids = {'report_id': self.report['uniqueIdentifier'],
+                    'question_id': 1}
         self._ = None
 
     def tearDown(self):
@@ -305,27 +318,34 @@ class TestSnapshotPipeline(unittest.TestCase):
         self.assertDictEqual(s.report, self.report)
         self.assertListEqual(s.responses, self.responses)
 
+    @mock.patch.object(codec, 'get_response_accessor')
     @mock.patch.object(pipeline.ResponsePipeline, 'add')
     @mock.patch.object(pipeline.ReportPipeline, 'add')
-    def test_snapshot_pipeline_add(self, mock_report_add, mock_response_add):
+    def test_snapshot_pipeline_add(
+            self, mock_report_add, mock_response_add, mock_get_accessor):
         '''Does the add() method on SnapshotPipeline objects initialize a
         ReportPipeline object and call its add() method, and initialize n
         ResponsePipeline objects and call their add() methods, where n is the
         number of responses included in the snapshot?
         '''
+        mock_get_accessor.return_value = return_value=(
+            codec.numeric_accessor, self.ids)
         pipeline.SnapshotPipeline(self.snapshot).add()
         self.assertTrue(mock_report_add.call_count, 1)
         self.assertEquals(mock_response_add.call_count, 2)
 
+    @mock.patch.object(codec, 'get_response_accessor')
     @mock.patch.object(pipeline.ResponsePipeline, 'update')
     @mock.patch.object(pipeline.ReportPipeline, 'update')
     def test_snapshot_pipeline_update(
-            self, mock_report_update, mock_response_update):
+            self, mock_report_update, mock_response_update, mock_get_accessor):
         '''Does the update() method on SnapshotPipeline objects initialize a
         ReportPipeline object and call its update() method, and initialize n
         ResponsePipeline objects and call their update() methods, where n is
         the number of responses included in the snapshot?
         '''
+        mock_get_accessor.return_value = return_value=(
+            codec.numeric_accessor, self.ids)
         pipeline.SnapshotPipeline(self.snapshot).update()
         self.assertTrue(mock_report_update.call_count, 1)
         self.assertEquals(mock_response_update.call_count, 2)
