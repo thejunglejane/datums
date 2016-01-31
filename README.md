@@ -8,6 +8,8 @@ Datums is a PostgreSQL pipeline for [Reporter](http://www.reporter-app.com/). Da
 
 # Getting Started
 
+Skip ahead to [Migrating to v1.0.0](#migrating-to-v100)
+
 ## Create the Database
 
 To create the datums database, first ensure that you have postgres installed and that the server is running locally. To create the database
@@ -70,40 +72,66 @@ or, from Python
 >>> base.database_teardown(base.engine)
 ```
 
+#### Migrating to v1.0.0
+
+##### `alembic`
+v1.0.0 introduces some changes to the database schema and the datums data model. To upgrade your existing datums database to a v1.0.0-compatible schema, a series of alembic mirations have been provided. To access these migrations, you will need to have the datums repository cloned to your local machine. If you've installed datums via pip, feel free to delete the cloned repository after you migrate your database, but remember to `pip install --upgrade datums` before trying to add more reports.
+
+To migrate your database, clone (or pull) this repository and run the setup script, then `cd` into the repository and run the migrations with
+
+```bash
+/path/to/datums/ $ alembic upgrade head
+/path/to/datums/ $ datums --update "/path/to/reporter/folder/*.json"
+/path/to/datums/ $ datums --add "/path/to/reporter/folder/*.json"
+```
+
+After migrating, it's important to `--update` all reports to add the `pressure_in` and `pressure_mb` attributes on weather reports as well as the `inland_water` attribute to placemark reports. You can safely ignore the `UserWarning` that no `uniqueIdentifier` can be found for altitude reports; those altitude reports will be added when you `--add` in the next step.
+
+v1.0.0 adds support for altitude reports. After updating, you'll need to `--add` all your reports to capture altitude reports from before May, 2015. They must be added instead of updated because altitude reports have not always had `uniqueIdentifiers`. Adding will allow datums to create UUIDs for these earlier altitude reports. If no UUID is found for an altitude report, datums canot update or delete it. See [issue 29](https://github.com/thejunglejane/datums/issues/29) for more information.
+
+##### Quick and Dirty
+Alternatively, you could just teardown your existing datums database and setup a new one. Make sure you teardown your database before upgrading datums.
+```bash
+$ datums --teardown
+$ pip install --upgrade datums
+$ datums --setup
+$ datums --add "/path/to/reporter/folder/*.json"
+```
+
 # Adding, Updating, and Deleting
 The `pipeline` module allows you to add, update, and delete reports and questions.
 
 ### Definitions
 We should define a few terms before getting into how to use the pipeline.
 
-* A **reporter file** is a JSON file that contains all the **report**s and all the **question**s for a given day. These files should be located in your Dropbox/Apps/Reporter-App folder. 
-* A **report** comprises a **snapshot** and all the **response**s collected by Reporter when you make a report.
-* A **snapshot** contains the information that the Reporter app automatically collects when you make a report, things like the weather, background noise, etc.
+* A **reporter file** is a JSON file that contains all the **snapshot**s and all the **question**s for a given day. These files should be located in your Dropbox/Apps/Reporter-App folder. 
+* A **snapshot** comprises a **report** and all the **response**s collected by Reporter when you make a report.
+* A **report** contains the information that the Reporter app automatically collects when you make a report, things like the weather, background noise, etc.
 * A **response** is the answer you enter for a question.
 
-Every **report** will have one **snapshot** and some number **response**s associated with it, and every **reporter file** will have some number **report**s and some number of **question**s associated with it, depending on how many times you make reports throughout the day. 
+Every **snapshot** will have one **report** and some number **response**s associated with it, and every **reporter file** will have some number **snapshot**s and some number of **question**s associated with it, depending on how many times you make reports throughout the day. 
 
 If you add or delete questions from the Reporter app, different **reporter file**s will have different **question**s from day to day. When you add a new **reporter file**, first add the **question**s from that day. If there are no new **question**s, nothing will happen; if there is a new **question**, datums will add it to the database.
 
-## Adding questions and reports
+## Adding questions, reports, and responses
 
-When you first set datums up, you'll probably want to add all the questions and reports in your Dropbox Reporter folder.
+When you first set datums up, you'll probably want to add all the questions, reports, and responses in your Dropbox Reporter folder.
 
 #### Command Line
-To add all the reporter files in your Dropbox Reporter folder from the command line, execute `datums` with the `--add` flag followed by the path to your Dropbox Reporter folder
+To add all the Reporter files in your Dropbox Reporter folder from the command line, execute `datums` with the `--add` flag followed by the path to your Dropbox Reporter folder
 
 ```
 $ datums --add "/path/to/reporter/folder/*.json"
 ```
 Make sure you include the '*.json' at the end to exclude the extra files in that folder. 
 
-To add the questions and reports from a single reporter file, include the filepath after the `--add` flag instead of the directory's path
+To add the questions and reports from a single Reporter file, include the filepath after the `--add` flag instead of the directory's path
 ```
 $ datums --add "/path/to/file"
 ```
 
 #### Python
-You can add all the reporter files or a single reporter file from Python as well.
+You can add all the Reporter files or a single Reporter file from Python as well.
 
 ```python
 >>> from datums.pipeline import add
@@ -117,8 +145,9 @@ You can add all the reporter files or a single reporter file from Python as well
 ...    # Add questions first because reports need them
 ...    for question in day['questions']:
 ...        add.add_question(question)
-...    for report in day['snapshots']:
-...        add.add_report(report)
+...    for snapshot in day['snapshots']:
+...        # Add report and responses
+...        add.add_snapshot(snapshot)
 ```
 ```python
 >>> from datums.pipeline import add
@@ -128,11 +157,12 @@ You can add all the reporter files or a single reporter file from Python as well
 >>> # Add questions first because reports need them
 >>> for question in day['questions']:
 ...     add.add_question(question)
->>> for report in day['snapshots']:
-...    add.add_report(report)
+>>> for snapshot in day['snapshots']:
+...    # Add report and responses
+...    add.add_snapshot(snapshot)
 ```
 
-You can also add a single report from a reporter file, if you need/want to
+You can also add a single snapshot from a Reporter file, if you need/want to
 ```python
 >>> from datums.pipeline import add
 >>> import json
@@ -142,18 +172,18 @@ You can also add a single report from a reporter file, if you need/want to
 >>> add.add_report(report)
 ```
 
-## Updating reports
+## Updating reports and responses
 
-If you make a change to one of your Reporter files, or if Reporter makes a change to one of those files, you can also update your reports. If a new report has been added the file located at '/path/to/file', the update will create it in the database.
+If you make a change to one of your Reporter files, or if Reporter makes a change to one of those files, you can also update your reports and responses. If a new snapshot has been added the file located at '/path/to/file', the update will create it in the database.
 
 #### Command Line
 
-To update all reports in all the files in your Dropbox Reporter folder
+To update all snapshots in all the files in your Dropbox Reporter folder
 
 ```
 $ datums --update "/path/to/reporter/folder/*.json"
 ```
-and to update all the reports in a single reporter file
+and to update all the snapshots in a single Reporter file
 ```
 $ datums --update "/path/to/file"
 ```
@@ -169,42 +199,42 @@ From Python
 >>> for file in all_reporter_files:
 ...    with open(os.path.expanduser(file), 'r') as f:
 ...        day = json.load(f)
-...    for report in day['snapshots']:
-...        update.update_report(report)
+...    for snapshot in day['snapshots']:
+...        update.update_snapshot(snapshot)
 ```
 ```python
 >>> from datums.pipeline import update
 >>> import json
 >>> with open('/path/to/file', 'r') as f:
 ...    day = json.load(f)
->>> for report in day['snapshots']:
-...    update.update_report(report)
+>>> for snapshot in day['snapshots']:
+...    update.update_snapshot(snapshot)
 ```
 
-To update an individual report within a reporter file with
+To update an individual snapshot within a snapshoter file with
 ```python
 >>> from datums.pipeline import update
 >>> import json
 >>> with open('/path/to/file', 'r') as f:
 ...    day = json.load(f)
->>> report = day['snapshots'][n]  # where n is the index of the report
->>> update.update_report(report)
+>>> snapshot = day['snapshots'][n]  # where n is the index of the snapshot
+>>> update.update_snapshot(snapshot)
 ```
-#### Changing a Report
-> While it is possible to change your response to a question from Python, it's not recommended. Datums won't overwrite the contents of your files, and you will lose the changes that you make the next time you update the reports in that file. If you make changes to a file itself, you may run into conflicts if Reporter tries to update that file.
+#### Changing a Snapshot
+> While it is possible to change your response to a question from Python, it's not recommended. Datums won't overwrite the contents of your files, and you will lose the changes that you make the next time you update the snapshots in that file. If you make changes to a file itself, you may run into conflicts if Reporter tries to update that file.
 
-> If you do need to change your response to a question, I recommend that you do so from the Reporter app. The list icon in the top left corner will display all of your reports, and you can select a report and make changes. If you have 'Save to Dropbox' enabled, the Dropbox file containing that report will be updated when you save your changes; if you don't have 'Save to Dropbox' enabled, the file containing the report will be updated the next time you export. Once the file is updated, you can follow the steps above to update the reports in that file in the database.
+> If you do need to change your response to a question, I recommend that you do so from the Reporter app. The list icon in the top left corner will display all of your snapshots, and you can select a snapshot and make changes. If you have 'Save to Dropbox' enabled, the Dropbox file containing that snapshot will be updated when you save your changes; if you don't have 'Save to Dropbox' enabled, the file containing the snapshot will be updated the next time you export. Once the file is updated, you can follow the steps above to update the snapshots in that file in the database.
 
-## Deleting reports
+## Deleting reports and responses
 
-Deleting reports from the database is much the same. 
+Deleting reports and responses from the database is much the same. Note that deleting a report will delete any responses included in the snapshot containing that report.
 
 #### Command Line
-You can delete all reports in your Dropbox Reporter folder with
+You can delete all snapshots in your Dropbox Reporter folder with
 ```
 $ datums --delete "/path/to/reporter/folder/*.json"
 ```
-and the reports in a single file with
+and the snapshots in a single file with
 ```
 $ datums --delete "/path/to/file"
 ```
@@ -219,26 +249,26 @@ $ datums --delete "/path/to/file"
 >>> for file in all_reporter_files:
 ...    with open(os.path.expanduser(file), 'r') as f:
 ...        day = json.load(f)
-...    for report in day['snapshots']:
-...        delete.delete_report(report)
+...    for snapshot in day['snapshots']:
+...        delete.delete_snapshot(snapshot)
 ```
 ```python
 >>> from datums.pipeline import delete
 >>> import json
 >>> with open('/path/to/file', 'r') as f:
 ...    day = json.load(f)
->>> for report in day['snapshots']:
-...    delete.delete_report(report)
+>>> for snapshot in day['snapshots']:
+...    delete.delete_snapshot(snapshot)
 ```
 
-To delete a single report within a reporter file
+To delete a single snapshot within a Reporter file
 ```python
 >>> from datums.pipeline import delete
 >>> import json
 >>> with open('/path/to/file', 'r') as f:
 ...    day = json.load(f)
->>> report = day['snapshots'][n]  # where n is the index of the report
->>> delete.delete_report(report)
+>>> snapshot = day['snapshots'][n]  # where n is the index of the snapshot
+>>> delete.delete_snapshot(snapshot)
 ```
 
 ## Deleting questions
@@ -257,6 +287,7 @@ You can also delete questions from the database. Note that this will delete any 
 # Notes
 
 1. This version of datums only supports JSON exports.
+2. Photo sets are not supported.
 
 # Licensing
 
