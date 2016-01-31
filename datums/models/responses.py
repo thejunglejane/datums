@@ -1,10 +1,12 @@
-from sqlalchemy import Column, ForeignKey
-from sqlalchemy import Boolean, Float, Integer, String
-from sqlalchemy.orm import backref, relationship
-from sqlalchemy.dialects import postgresql
-from sqlalchemy_utils import UUIDType
+# -*- coding: utf-8 -*-
 
 from base import GhostBase, ResponseClassLegacyAccessor
+from sqlalchemy import Column, ForeignKey
+from sqlalchemy import Boolean, Float, Integer, String
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.orm import backref, relationship
+from sqlalchemy_utils import UUIDType
+
 
 __all__ = ['Response', 'BooleanResponse', 'NumericResponse', 'LocationResponse',
            'MultiResponse', 'NoteResponse', 'PeopleResponse', 'TokenResponse']
@@ -15,24 +17,23 @@ class Response(GhostBase):
     __tablename__ = 'responses'
 
     id = Column(Integer, primary_key=True)
-    snapshot_id = Column(UUIDType, ForeignKey('snapshots.id'))
-    question_id = Column(Integer, ForeignKey('questions.id'))
+    question_id = Column(
+        Integer, ForeignKey('questions.id', ondelete='CASCADE'))
+    report_id = Column(UUIDType, ForeignKey('reports.id', ondelete='CASCADE'))
     type = Column(String)
 
     __mapper_args__ = {
         'polymorphic_on': type
     }
 
-    def __repr__(self):
-        return '''<{self.__name__}(
-            id={self.id}, snapshot_id={self.snapshot_id},
-            question_id={self.question_id}, type={self.type}
-            )>'''.format(self)
+    def __str__(self):
+        attrs = ['id', 'report_id', 'question_id', 'type']
+        super(Response, self).__str__(attrs)
 
 
 class BooleanResponse(Response):
 
-    boolean_response = Column(Boolean)  # answeredOptions
+    boolean_response = Column(Boolean)
 
     __mapper_args__ = {
         'polymorphic_identity': 'boolean',
@@ -41,8 +42,8 @@ class BooleanResponse(Response):
 
 class LocationResponse(Response):
 
-    location_response = Column(String)  # text
-    venue_id = Column(String, nullable=True)  # foursquareVenueId
+    location_response = Column(String)
+    venue_id = Column(String, nullable=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'location',
@@ -51,7 +52,7 @@ class LocationResponse(Response):
 
 class MultiResponse(Response):
 
-    multi_response = Column(postgresql.ARRAY(String))  # answeredOptions
+    multi_response = Column(postgresql.ARRAY(String))
 
     __mapper_args__ = {
         'polymorphic_identity': 'multi',
@@ -69,7 +70,7 @@ class NoteResponse(Response):
 
 class NumericResponse(Response):
 
-    numeric_response = Column(Float)  # numericResponse
+    numeric_response = Column(Float)
 
     __mapper_args__ = {
         'polymorphic_identity': 'numeric',
@@ -78,7 +79,7 @@ class NumericResponse(Response):
 
 class PeopleResponse(Response):
 
-    people_response = Column(postgresql.ARRAY(String))  # text
+    people_response = Column(postgresql.ARRAY(String))
 
     __mapper_args__ = {
         'polymorphic_identity': 'people',
@@ -87,7 +88,7 @@ class PeopleResponse(Response):
 
 class TokenResponse(Response):
 
-    tokens_response = Column(postgresql.ARRAY(String))  # text
+    tokens_response = Column(postgresql.ARRAY(String))
 
     __mapper_args__ = {
         'polymorphic_identity': 'tokens',

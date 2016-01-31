@@ -1,7 +1,20 @@
+# -*- coding: utf-8 -*-
+
 from datums import models
 
 
 def human_to_boolean(human):
+    '''Convert a boolean string ('Yes' or 'No') to True or False.
+
+    PARAMETERS
+    ----------
+    human   : list
+              a list containing the "human" boolean string to be converted to
+              a Python boolean object. If a non-list is passed, or if the list
+              is empty, None will be returned. Only the first element of the
+              list will be used. Anything other than 'Yes' will be considered
+              False.
+    '''
     if not isinstance(human, list) or len(human) == 0:
         return None
     if human[0].lower() == 'yes':
@@ -41,14 +54,14 @@ note_accessor = models.base.ResponseClassLegacyAccessor(
     (lambda x: [i.get('text') for i in x.get('textResponses', [])]))
 
 
-def get_response_accessor(response, snapshot):
+def get_response_accessor(response, report):
     # Determine the question ID and response type based on the prompt
     question_id, response_type = models.session.query(
         models.Question.id, models.Question.type).filter(
             models.Question.prompt == response['questionPrompt']).first()
 
     ids = {'question_id': question_id,  # set the question ID
-           'snapshot_id': snapshot['uniqueIdentifier']}  # set the snapshot ID
+           'report_id': report['uniqueIdentifier']}  # set the report ID
 
     # Dictionary mapping response type to response class, column, and accessor
     # mapper

@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
+
+from base import GhostBase, session
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import relationship
 
-from base import GhostBase, session
 
 __all__ = ['Question']
 
@@ -17,7 +19,6 @@ class Question(GhostBase):
 
     responses = relationship('Response', cascade='save-update, merge, delete')
 
-    def __repr__(self):
-        return '''<Question(
-            id={self.id}, type={self.type}, prompt={self.prompt}
-            )>'''.format(self)
+    def __str__(self):
+        attrs = ['id', 'type', 'prompt']
+        super(Question, self).__str__(attrs)

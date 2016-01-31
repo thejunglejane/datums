@@ -12,7 +12,9 @@ setup(
     packages = ['datums', 'datums.pipeline', 'datums.models'],
     version = __version__,
     scripts = ['bin/datums'],
-    install_requires = ['sqlalchemy', 'sqlalchemy-utils', 'python-dateutil'],
+    install_requires = [
+        'alembic', 'sqlalchemy', 'sqlalchemy-utils', 'python-dateutil'],
+    tests_require = ['mock'],
     description = 'A PostgreSQL pipeline for Reporter.',
     author = 'Jane Stewart Adams',
     author_email = 'jane@thejunglejane.com',
