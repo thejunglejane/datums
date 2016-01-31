@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import with_statement
+
 import argparse
 import glob
 import json
@@ -6,7 +8,6 @@ import sys
 import os
 
 from datums import __version__
-
 from datums import pipeline
 from datums import models
 from datums.models import base
@@ -17,18 +18,20 @@ from datums.models import base
 def create_parser():
     # Breaking out argument parsing for easier testing
     parser = argparse.ArgumentParser(
-        prog='datums', description='PostgreSQL pipeline for Reporter.', usage='%(prog)s [options]')
-    parser.add_argument('-v', '--version', action='store_true')
-    parser.add_argument('--setup', action='store_true',
-                        help='Setup the datums database')
-    parser.add_argument('--teardown', action='store_true',
-                        help='Tear down the datums database')
-    parser.add_argument('-A', '--add',
-                        help='Add the reports in file(s) specified')
-    parser.add_argument('-U', '--update',
-                        help='Update the reports in the file(s) specified')
-    parser.add_argument('-D', '--delete',
-                        help='Delete the reports in the file(s) specified from the database')
+        prog='datums', description='PostgreSQL pipeline for Reporter.',
+        usage='%(prog)s [options]')
+    parser.add_argument('-V', '--version', action='store_true')
+    parser.add_argument(
+        '--setup', action='store_true', help='Setup the datums database')
+    parser.add_argument(
+        '--teardown', action='store_true',
+        help='Tear down the datums database')
+    parser.add_argument(
+        '-A', '--add', help='Add the reports in file(s) specified')
+    parser.add_argument(
+        '-U', '--update', help='Update the reports in the file(s) specified')
+    parser.add_argument(
+        '-D', '--delete', help='Delete the reports in the file(s) specified')
     return parser
 
 

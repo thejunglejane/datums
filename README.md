@@ -8,6 +8,8 @@ Datums is a PostgreSQL pipeline for [Reporter](http://www.reporter-app.com/). Da
 
 # Getting Started
 
+Skip ahead to [Migrating to v1.0.0](#migrating-to-v100)
+
 ## Create the Database
 
 To create the datums database, first ensure that you have postgres installed and that the server is running locally. To create the database
@@ -72,7 +74,10 @@ or, from Python
 
 #### Migrating to v1.0.0
 
-v1.0.0 introduces some changes to the database schema and the datums data model. To upgrade your existing datums database to a v1.0.0-compatible schema, a series of alembic mirations have been provided. To migrate your database, clone (or pull) this repository and run the setup script, then `cd` into the repository and run the migrations
+##### `alembic`
+v1.0.0 introduces some changes to the database schema and the datums data model. To upgrade your existing datums database to a v1.0.0-compatible schema, a series of alembic mirations have been provided. To access these migrations, you will need to have the datums repository cloned to your local machine. If you've installed datums via pip, feel free to delete the cloned repository after you migrate your database, but remember to `pip install --upgrade datums` before trying to add more reports.
+
+To migrate your database, clone (or pull) this repository and run the setup script, then `cd` into the repository and run the migrations with
 
 ```bash
 /path/to/datums/ $ alembic upgrade head
@@ -84,7 +89,8 @@ After migrating, it's important to `--update` all reports to add the `pressure_i
 
 v1.0.0 adds support for altitude reports. After updating, you'll need to `--add` all your reports to capture altitude reports from before May, 2015. They must be added instead of updated because altitude reports have not always had `uniqueIdentifiers`. Adding will allow datums to create UUIDs for these earlier altitude reports. If no UUID is found for an altitude report, datums canot update or delete it. See [issue 29](https://github.com/thejunglejane/datums/issues/29) for more information.
 
-Alternatively, you could just teardown your existing datums database and setup a new one.
+##### Quick and Dirty
+Alternatively, you could just teardown your existing datums database and setup a new one. Make sure you teardown your database before upgrading datums.
 ```bash
 $ datums --teardown
 $ pip install --upgrade datums
