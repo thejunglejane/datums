@@ -134,7 +134,7 @@ $ datums --add "/path/to/file"
 You can add all the Reporter files or a single Reporter file from Python as well.
 
 ```python
->>> from datums.pipeline import add
+>>> from datums import pipeline
 >>> import glob
 >>> import json
 >>> import os
@@ -144,32 +144,32 @@ You can add all the Reporter files or a single Reporter file from Python as well
 ...        day = json.load(f)
 ...    # Add questions first because reports need them
 ...    for question in day['questions']:
-...        add.add_question(question)
+...        pipeline.QuestionPipeline(question).add()
 ...    for snapshot in day['snapshots']:
 ...        # Add report and responses
-...        add.add_snapshot(snapshot)
+...        pipeline.SnapshotPipeline(snapshot).add()
 ```
 ```python
->>> from datums.pipeline import add
+>>> from datums import pipeline
 >>> import json
 >>> with open('/path/to/file', 'r') as f:
 ...    day = json.load(f)
 >>> # Add questions first because reports need them
 >>> for question in day['questions']:
-...     add.add_question(question)
+...     pipeline.QuestionPipeline(question).add()
 >>> for snapshot in day['snapshots']:
 ...    # Add report and responses
-...    add.add_snapshot(snapshot)
+...    pipeline.SnapshotPipeline(snapshot).add()
 ```
 
 You can also add a single snapshot from a Reporter file, if you need/want to
 ```python
->>> from datums.pipeline import add
+>>> from datums import pipeline
 >>> import json
 >>> with open('/path/to/file', 'r') as f:
 ...    day = json.load(f)
->>> report = day['snapshots'][n]  # where n is the index of the report
->>> add.add_report(report)
+>>> snapshot = day['snapshots'][n]  # where n is the index of the report
+>>> pipeline.SnapshotPipeline(snapshot).add()
 ```
 
 ## Updating reports and responses
@@ -191,7 +191,7 @@ $ datums --update "/path/to/file"
 #### Python
 From Python
 ```python
->>> from datums.pipeline import update
+>>> from datums import pipeline
 >>> import glob
 >>> import json
 >>> import os
@@ -200,25 +200,25 @@ From Python
 ...    with open(os.path.expanduser(file), 'r') as f:
 ...        day = json.load(f)
 ...    for snapshot in day['snapshots']:
-...        update.update_snapshot(snapshot)
+...        pipeline.SnapshotPipeline(snapshot).update()
 ```
 ```python
->>> from datums.pipeline import update
+>>> from datums import pipeline
 >>> import json
 >>> with open('/path/to/file', 'r') as f:
 ...    day = json.load(f)
 >>> for snapshot in day['snapshots']:
-...    update.update_snapshot(snapshot)
+...    pipeline.SnapshotPipeline(snapshot).update()
 ```
 
 To update an individual snapshot within a snapshoter file with
 ```python
->>> from datums.pipeline import update
+>>> from datums import pipeline
 >>> import json
 >>> with open('/path/to/file', 'r') as f:
 ...    day = json.load(f)
 >>> snapshot = day['snapshots'][n]  # where n is the index of the snapshot
->>> update.update_snapshot(snapshot)
+>>> pipeline.SnapshotPipeline(snapshot).update()
 ```
 #### Changing a Snapshot
 > While it is possible to change your response to a question from Python, it's not recommended. Datums won't overwrite the contents of your files, and you will lose the changes that you make the next time you update the snapshots in that file. If you make changes to a file itself, you may run into conflicts if Reporter tries to update that file.
@@ -241,7 +241,7 @@ $ datums --delete "/path/to/file"
 
 #### Python
 ```python
->>> from datums.pipeline import delete
+>>> from datums import pipeline
 >>> import glob
 >>> import json
 >>> import os
@@ -253,22 +253,22 @@ $ datums --delete "/path/to/file"
 ...        delete.delete_snapshot(snapshot)
 ```
 ```python
->>> from datums.pipeline import delete
+>>> from datums import pipeline
 >>> import json
 >>> with open('/path/to/file', 'r') as f:
 ...    day = json.load(f)
 >>> for snapshot in day['snapshots']:
-...    delete.delete_snapshot(snapshot)
+...    pipeline.SnapshotPipeline(snapshot).delete()
 ```
 
 To delete a single snapshot within a Reporter file
 ```python
->>> from datums.pipeline import delete
+>>> from datums import pipeline
 >>> import json
 >>> with open('/path/to/file', 'r') as f:
 ...    day = json.load(f)
 >>> snapshot = day['snapshots'][n]  # where n is the index of the snapshot
->>> delete.delete_snapshot(snapshot)
+>>> pipeline.SnapshotPipeline(snapshot).delete()
 ```
 
 ## Deleting questions
@@ -276,12 +276,12 @@ To delete a single snapshot within a Reporter file
 You can also delete questions from the database. Note that this will delete any responses associated with the deleted question as well.
 
 ```python
->>> from datums.pipeline import delete
+>>> from datums import pipeline
 >>> import json
 >>> with open('/path/to/file', 'r') as f:
 ...    day = json.load(f)
 >>> question = day['questions'][n]  # where n is the index of the question
->>> delete.delete_question(question)
+>>> pipeline.QuestionPipeline(snapshot).delete()
 ```
 
 # Notes
