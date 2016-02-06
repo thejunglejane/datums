@@ -10,10 +10,6 @@ from datums import models
 __all__ = ['codec', 'mappers']
 
 
-def _traverse_report():
-    pass
-
-
 class QuestionPipeline(object):
 
     def __init__(self, question):
